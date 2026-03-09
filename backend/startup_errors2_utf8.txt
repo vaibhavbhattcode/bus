@@ -1,0 +1,205 @@
+﻿
+> bus-booking-backend@1.0.0 start:dev
+> nest start --watch
+
+[2J[3J[H[[90m11:36:25 am[0m] Starting compilation in watch mode...
+
+[[90m11:36:49 am[0m] Found 0 errors. Watching for file changes.
+
+2026-03-04T06:06:53.917Z [32minfo[39m [NestFactory] Starting Nest application... +0ms
+2026-03-04T06:06:54.029Z [32minfo[39m [InstanceLoader] LoggerModule dependencies initialized +111ms
+2026-03-04T06:06:54.037Z [32minfo[39m [InstanceLoader] PrismaModule dependencies initialized +8ms
+2026-03-04T06:06:54.037Z [32minfo[39m [InstanceLoader] PassportModule dependencies initialized +0ms
+2026-03-04T06:06:54.038Z [32minfo[39m [InstanceLoader] CronModule dependencies initialized +1ms
+2026-03-04T06:06:54.051Z [32minfo[39m [InstanceLoader] ThrottlerModule dependencies initialized +13ms
+2026-03-04T06:06:54.052Z [32minfo[39m [InstanceLoader] HttpModule dependencies initialized +1ms
+2026-03-04T06:06:54.053Z [32minfo[39m [InstanceLoader] JwtModule dependencies initialized +1ms
+2026-03-04T06:06:54.053Z [32minfo[39m [InstanceLoader] JwtModule dependencies initialized +0ms
+2026-03-04T06:06:54.057Z [32minfo[39m [InstanceLoader] ConfigHostModule dependencies initialized +4ms
+2026-03-04T06:06:54.061Z [32minfo[39m [InstanceLoader] ReportsModule dependencies initialized +4ms
+2026-03-04T06:06:54.062Z [32minfo[39m [InstanceLoader] DiscoveryModule dependencies initialized +1ms
+2026-03-04T06:06:54.070Z [32minfo[39m [InstanceLoader] MetricsModule dependencies initialized +8ms
+2026-03-04T06:06:54.071Z [32minfo[39m [InstanceLoader] ConfigModule dependencies initialized +1ms
+2026-03-04T06:06:54.072Z [32minfo[39m [InstanceLoader] ConfigModule dependencies initialized +1ms
+2026-03-04T06:06:54.077Z [32minfo[39m [InstanceLoader] BullModule dependencies initialized +5ms
+2026-03-04T06:06:54.124Z [32minfo[39m [InstanceLoader] AppModule dependencies initialized +47ms
+2026-03-04T06:06:54.125Z [32minfo[39m [InstanceLoader] LocationsModule dependencies initialized +1ms
+2026-03-04T06:06:54.126Z [32minfo[39m [InstanceLoader] BullModule dependencies initialized +1ms
+2026-03-04T06:06:54.126Z [32minfo[39m [InstanceLoader] RedisModule dependencies initialized +0ms
+2026-03-04T06:06:54.126Z [32minfo[39m [InstanceLoader] CommonModule dependencies initialized +0ms
+2026-03-04T06:06:54.129Z [32minfo[39m [InstanceLoader] JwtModule dependencies initialized +3ms
+2026-03-04T06:06:54.149Z [32minfo[39m [InstanceLoader] UsersModule dependencies initialized +20ms
+2026-03-04T06:06:54.149Z [32minfo[39m [InstanceLoader] AlertsModule dependencies initialized +0ms
+2026-03-04T06:06:54.149Z [32minfo[39m [InstanceLoader] BlogModule dependencies initialized +0ms
+2026-03-04T06:06:54.150Z [32minfo[39m [InstanceLoader] FeedbackModule dependencies initialized +1ms
+2026-03-04T06:06:54.150Z [32minfo[39m [InstanceLoader] FeatureFlagsModule dependencies initialized +0ms
+2026-03-04T06:06:54.150Z [32minfo[39m [InstanceLoader] DestinationsModule dependencies initialized +0ms
+2026-03-04T06:06:54.150Z [32minfo[39m [InstanceLoader] ExperimentsModule dependencies initialized +0ms
+2026-03-04T06:06:54.150Z [32minfo[39m [InstanceLoader] PromoCodesModule dependencies initialized +0ms
+2026-03-04T06:06:54.152Z [32minfo[39m [InstanceLoader] ProvidersModule dependencies initialized +2ms
+2026-03-04T06:06:54.152Z [32minfo[39m [InstanceLoader] BullModule dependencies initialized +0ms
+2026-03-04T06:06:54.171Z [32minfo[39m [InstanceLoader] TrackingModule dependencies initialized +19ms
+2026-03-04T06:06:54.173Z [32minfo[39m [InstanceLoader] MailModule dependencies initialized +2ms
+2026-03-04T06:06:54.173Z [32minfo[39m [InstanceLoader] PaymentsModule dependencies initialized +0ms
+2026-03-04T06:06:54.174Z [32minfo[39m [InstanceLoader] RoutesModule dependencies initialized +1ms
+2026-03-04T06:06:54.176Z [32minfo[39m [InstanceLoader] NotificationsModule dependencies initialized +2ms
+2026-03-04T06:06:54.177Z [32minfo[39m [InstanceLoader] AdminModule dependencies initialized +1ms
+2026-03-04T06:06:54.180Z [32minfo[39m [InstanceLoader] AuthModule dependencies initialized +3ms
+2026-03-04T06:06:54.180Z [32minfo[39m [InstanceLoader] BookingsModule dependencies initialized +0ms
+2026-03-04T06:06:54.180Z [32minfo[39m [InstanceLoader] SupportModule dependencies initialized +0ms
+2026-03-04T06:06:54.447Z [32minfo[39m [WebSocketsController] ProviderStatsGateway subscribed to the "subscribeToStats" message +267ms
+2026-03-04T06:06:54.447Z [32minfo[39m [WebSocketsController] ProviderStatsGateway subscribed to the "unsubscribeFromStats" message +0ms
+2026-03-04T06:06:54.452Z [32minfo[39m [WebSocketsController] SupportGateway subscribed to the "join_ticket" message +5ms
+2026-03-04T06:06:54.452Z [32minfo[39m [WebSocketsController] SupportGateway subscribed to the "send_message" message +0ms
+2026-03-04T06:06:54.454Z [32minfo[39m [WebSocketsController] TrackingGateway subscribed to the "join_route" message +2ms
+2026-03-04T06:06:54.454Z [32minfo[39m [WebSocketsController] TrackingGateway subscribed to the "update_location" message +0ms
+2026-03-04T06:06:54.466Z [32minfo[39m [RoutesResolver] LocationsController {/api/locations}: +12ms
+2026-03-04T06:06:54.471Z [32minfo[39m [RouterExplorer] Mapped {/api/locations/cities, GET} route +5ms
+2026-03-04T06:06:54.472Z [32minfo[39m [RouterExplorer] Mapped {/api/locations/search, GET} route +1ms
+2026-03-04T06:06:54.473Z [32minfo[39m [RouterExplorer] Mapped {/api/locations/popular-routes, GET} route +1ms
+2026-03-04T06:06:54.473Z [32minfo[39m [RoutesResolver] AuthController {/api/auth}: +0ms
+2026-03-04T06:06:54.474Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/login, POST} route +1ms
+2026-03-04T06:06:54.475Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/refresh, POST} route +1ms
+2026-03-04T06:06:54.476Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/register, POST} route +1ms
+2026-03-04T06:06:54.476Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/register/passenger, POST} route +0ms
+2026-03-04T06:06:54.477Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/register/provider, POST} route +1ms
+2026-03-04T06:06:54.479Z [32minfo[39m [RouterExplorer] Mapped {/api/auth/refresh-check, GET} route +2ms
+2026-03-04T06:06:54.480Z [32minfo[39m [RoutesResolver] UsersController {/api/users}: +1ms
+2026-03-04T06:06:54.481Z [32minfo[39m [RouterExplorer] Mapped {/api/users/profile, GET} route +1ms
+2026-03-04T06:06:54.482Z [32minfo[39m [RouterExplorer] Mapped {/api/users/profile, PATCH} route +1ms
+2026-03-04T06:06:54.482Z [32minfo[39m [RouterExplorer] Mapped {/api/users/stats, GET} route +0ms
+2026-03-04T06:06:54.482Z [32minfo[39m [RoutesResolver] ProvidersController {/api/providers}: +0ms
+2026-03-04T06:06:54.483Z [32minfo[39m [RouterExplorer] Mapped {/api/providers, POST} route +1ms
+2026-03-04T06:06:54.484Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/register, POST} route +1ms
+2026-03-04T06:06:54.485Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/profile, GET} route +1ms
+2026-03-04T06:06:54.485Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/profile, PUT} route +0ms
+2026-03-04T06:06:54.486Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/vehicles, GET} route +1ms
+2026-03-04T06:06:54.486Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/vehicles, POST} route +0ms
+2026-03-04T06:06:54.487Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/vehicles/:id, PUT} route +1ms
+2026-03-04T06:06:54.489Z [32minfo[39m [RouterExplorer] Mapped {/api/providers/vehicles/:id, DELETE} route +2ms
+2026-03-04T06:06:54.489Z [32minfo[39m [RoutesResolver] NotificationsController {/api/notifications}: +0ms
+2026-03-04T06:06:54.490Z [32minfo[39m [RouterExplorer] Mapped {/api/notifications, GET} route +1ms
+2026-03-04T06:06:54.491Z [32minfo[39m [RouterExplorer] Mapped {/api/notifications/unread-count, GET} route +1ms
+2026-03-04T06:06:54.492Z [32minfo[39m [RouterExplorer] Mapped {/api/notifications/mark-all-read, PUT} route +1ms
+2026-03-04T06:06:54.492Z [32minfo[39m [RouterExplorer] Mapped {/api/notifications/:id/read, PUT} route +0ms
+2026-03-04T06:06:54.493Z [32minfo[39m [RouterExplorer] Mapped {/api/notifications/:id, DELETE} route +1ms
+2026-03-04T06:06:54.494Z [32minfo[39m [RoutesResolver] RoutesController {/api/routes}: +1ms
+2026-03-04T06:06:54.495Z [32minfo[39m [RouterExplorer] Mapped {/api/routes, POST} route +1ms
+2026-03-04T06:06:54.496Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/search, GET} route +1ms
+2026-03-04T06:06:54.497Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/provider/my-routes, GET} route +1ms
+2026-03-04T06:06:54.498Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id, GET} route +1ms
+2026-03-04T06:06:54.499Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id/seats, GET} route +1ms
+2026-03-04T06:06:54.500Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id/lock-seats, POST} route +1ms
+2026-03-04T06:06:54.501Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id/unlock-seats, POST} route +1ms
+2026-03-04T06:06:54.502Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id, PUT} route +1ms
+2026-03-04T06:06:54.503Z [32minfo[39m [RouterExplorer] Mapped {/api/routes/:id, DELETE} route +1ms
+2026-03-04T06:06:54.503Z [32minfo[39m [RoutesResolver] BookingsController {/api/bookings}: +0ms
+2026-03-04T06:06:54.504Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings, POST} route +1ms
+2026-03-04T06:06:54.504Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings, GET} route +0ms
+2026-03-04T06:06:54.505Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings/my-bookings, GET} route +1ms
+2026-03-04T06:06:54.505Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings/provider/my-bookings, GET} route +0ms
+2026-03-04T06:06:54.506Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings/:id, GET} route +1ms
+2026-03-04T06:06:54.506Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings/:id/status, PUT} route +0ms
+2026-03-04T06:06:54.507Z [32minfo[39m [RouterExplorer] Mapped {/api/bookings/:id/cancel, POST} route +1ms
+2026-03-04T06:06:54.507Z [32minfo[39m [RoutesResolver] PromoCodesController {/api/promo-codes}: +0ms
+2026-03-04T06:06:54.508Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes, POST} route +1ms
+2026-03-04T06:06:54.508Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes, GET} route +0ms
+2026-03-04T06:06:54.509Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes/:id, GET} route +1ms
+2026-03-04T06:06:54.510Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes/:id, PATCH} route +1ms
+2026-03-04T06:06:54.510Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes/:id, DELETE} route +0ms
+2026-03-04T06:06:54.510Z [32minfo[39m [RouterExplorer] Mapped {/api/promo-codes/apply, POST} route +0ms
+2026-03-04T06:06:54.511Z [32minfo[39m [RoutesResolver] PaymentsController {/api/payments}: +1ms
+2026-03-04T06:06:54.511Z [32minfo[39m [RouterExplorer] Mapped {/api/payments/create-order, POST} route +0ms
+2026-03-04T06:06:54.512Z [32minfo[39m [RouterExplorer] Mapped {/api/payments/verify, POST} route +1ms
+2026-03-04T06:06:54.513Z [32minfo[39m [RoutesResolver] AdminController {/api/admin}: +1ms
+2026-03-04T06:06:54.514Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/notifications/send, POST} route +1ms
+2026-03-04T06:06:54.514Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/dashboard, GET} route +0ms
+2026-03-04T06:06:54.515Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/analytics, GET} route +1ms
+2026-03-04T06:06:54.515Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/analytics/revenue, GET} route +0ms
+2026-03-04T06:06:54.516Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/analytics/bookings, GET} route +1ms
+2026-03-04T06:06:54.516Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/analytics/growth, GET} route +0ms
+2026-03-04T06:06:54.517Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users, GET} route +1ms
+2026-03-04T06:06:54.517Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/stats, GET} route +0ms
+2026-03-04T06:06:54.518Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/:id, GET} route +1ms
+2026-03-04T06:06:54.518Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/:id/analytics, GET} route +0ms
+2026-03-04T06:06:54.519Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/:id/status, PATCH} route +1ms
+2026-03-04T06:06:54.519Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/:id/role, PATCH} route +0ms
+2026-03-04T06:06:54.520Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/users/:id, DELETE} route +1ms
+2026-03-04T06:06:54.520Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers, GET} route +0ms
+2026-03-04T06:06:54.520Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/stats, GET} route +0ms
+2026-03-04T06:06:54.521Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/pending, GET} route +1ms
+2026-03-04T06:06:54.521Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id, GET} route +0ms
+2026-03-04T06:06:54.522Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id/analytics, GET} route +1ms
+2026-03-04T06:06:54.522Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id/verify, PUT} route +1ms
+2026-03-04T06:06:54.523Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id/reject, PUT} route +0ms
+2026-03-04T06:06:54.523Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id/suspend, PUT} route +1ms
+2026-03-04T06:06:54.524Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/providers/:id/activate, PUT} route +0ms
+2026-03-04T06:06:54.524Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/bookings, GET} route +0ms
+2026-03-04T06:06:54.525Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/bookings/stats, GET} route +1ms
+2026-03-04T06:06:54.525Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/bookings/:id, GET} route +0ms
+2026-03-04T06:06:54.526Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/bookings/:id/status, PATCH} route +1ms
+2026-03-04T06:06:54.526Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/overview, GET} route +0ms
+2026-03-04T06:06:54.527Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/audit-logs, GET} route +1ms
+2026-03-04T06:06:54.527Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/access-logs, GET} route +0ms
+2026-03-04T06:06:54.528Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/settings, GET} route +1ms
+2026-03-04T06:06:54.529Z [32minfo[39m [RouterExplorer] Mapped {/api/admin/settings/:key, PUT} route +1ms
+2026-03-04T06:06:54.529Z [32minfo[39m [RoutesResolver] AlertsController {/api/alerts}: +0ms
+2026-03-04T06:06:54.530Z [32minfo[39m [RouterExplorer] Mapped {/api/alerts, POST} route +1ms
+2026-03-04T06:06:54.531Z [32minfo[39m [RouterExplorer] Mapped {/api/alerts, GET} route +1ms
+2026-03-04T06:06:54.532Z [32minfo[39m [RouterExplorer] Mapped {/api/alerts/:id, DELETE} route +1ms
+2026-03-04T06:06:54.532Z [32minfo[39m [RoutesResolver] BlogController {/api/blog}: +0ms
+2026-03-04T06:06:54.533Z [32minfo[39m [RouterExplorer] Mapped {/api/blog, GET} route +1ms
+2026-03-04T06:06:54.534Z [32minfo[39m [RouterExplorer] Mapped {/api/blog/admin/all, GET} route +1ms
+2026-03-04T06:06:54.535Z [32minfo[39m [RouterExplorer] Mapped {/api/blog/slug/:slug, GET} route +1ms
+2026-03-04T06:06:54.536Z [32minfo[39m [RouterExplorer] Mapped {/api/blog/:id, GET} route +1ms
+2026-03-04T06:06:54.537Z [32minfo[39m [RouterExplorer] Mapped {/api/blog, POST} route +1ms
+2026-03-04T06:06:54.538Z [32minfo[39m [RouterExplorer] Mapped {/api/blog/:id, PUT} route +1ms
+2026-03-04T06:06:54.539Z [32minfo[39m [RouterExplorer] Mapped {/api/blog/:id, DELETE} route +1ms
+2026-03-04T06:06:54.539Z [32minfo[39m [RoutesResolver] FeedbackController {/api/feedback}: +0ms
+2026-03-04T06:06:54.540Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback, POST} route +1ms
+2026-03-04T06:06:54.541Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/all, GET} route +1ms
+2026-03-04T06:06:54.542Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/:id/reply, POST} route +1ms
+2026-03-04T06:06:54.543Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/public, GET} route +1ms
+2026-03-04T06:06:54.544Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/provider/my-reviews, GET} route +1ms
+2026-03-04T06:06:54.545Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/provider/:id, GET} route +1ms
+2026-03-04T06:06:54.546Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/my-feedback, GET} route +1ms
+2026-03-04T06:06:54.547Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/:id, PUT} route +1ms
+2026-03-04T06:06:54.548Z [32minfo[39m [RouterExplorer] Mapped {/api/feedback/:id, DELETE} route +1ms
+2026-03-04T06:06:54.548Z [32minfo[39m [RoutesResolver] ReportsController {/api/reports}: +0ms
+2026-03-04T06:06:54.549Z [32minfo[39m [RoutesResolver] SupportController {/api/support}: +1ms
+2026-03-04T06:06:54.549Z [32minfo[39m [RouterExplorer] Mapped {/api/support, POST} route +0ms
+2026-03-04T06:06:54.550Z [32minfo[39m [RouterExplorer] Mapped {/api/support/my-tickets, GET} route +1ms
+2026-03-04T06:06:54.550Z [32minfo[39m [RouterExplorer] Mapped {/api/support/stats, GET} route +0ms
+2026-03-04T06:06:54.551Z [32minfo[39m [RouterExplorer] Mapped {/api/support/all-tickets, GET} route +1ms
+2026-03-04T06:06:54.552Z [32minfo[39m [RouterExplorer] Mapped {/api/support/tickets/:id, GET} route +1ms
+2026-03-04T06:06:54.553Z [32minfo[39m [RouterExplorer] Mapped {/api/support/tickets/:id/reply, POST} route +1ms
+2026-03-04T06:06:54.554Z [32minfo[39m [RouterExplorer] Mapped {/api/support/tickets/:id/resolve, POST} route +1ms
+2026-03-04T06:06:54.554Z [32minfo[39m [RoutesResolver] FeatureFlagsController {/api/feature-flags}: +0ms
+2026-03-04T06:06:54.555Z [32minfo[39m [RouterExplorer] Mapped {/api/feature-flags, GET} route +1ms
+2026-03-04T06:06:54.556Z [32minfo[39m [RouterExplorer] Mapped {/api/feature-flags, POST} route +1ms
+2026-03-04T06:06:54.556Z [32minfo[39m [RouterExplorer] Mapped {/api/feature-flags/:id/toggle, PATCH} route +0ms
+2026-03-04T06:06:54.557Z [32minfo[39m [RoutesResolver] DestinationsController {/api/destinations}: +1ms
+2026-03-04T06:06:54.557Z [32minfo[39m [RouterExplorer] Mapped {/api/destinations/popular, GET} route +0ms
+2026-03-04T06:06:54.557Z [32minfo[39m [RouterExplorer] Mapped {/api/destinations/admin, GET} route +0ms
+2026-03-04T06:06:54.558Z [32minfo[39m [RouterExplorer] Mapped {/api/destinations, POST} route +1ms
+2026-03-04T06:06:54.559Z [32minfo[39m [RouterExplorer] Mapped {/api/destinations/:id, DELETE} route +1ms
+2026-03-04T06:06:54.559Z [32minfo[39m [RoutesResolver] ExperimentsController {/api/experiments}: +0ms
+2026-03-04T06:06:54.559Z [32minfo[39m [RouterExplorer] Mapped {/api/experiments/promotions, GET} route +0ms
+2026-03-04T06:06:54.560Z [32minfo[39m [RouterExplorer] Mapped {/api/experiments/events, POST} route +1ms
+2026-03-04T06:06:54.560Z [32minfo[39m [RoutesResolver] MetricsController {/api/metrics}: +0ms
+2026-03-04T06:06:54.561Z [32minfo[39m [RouterExplorer] Mapped {/api/metrics/summary, GET} route +1ms
+2026-03-04T06:06:56.513Z [31merror[39m [RedisService] Redis connection failed after 5 retries. Redis features will be disabled. +2s
+2026-03-04T06:06:56.513Z [33mwarn[39m [RedisService] Initial Redis connection failed. Redis features will be disabled until connection is established. +0ms
+2026-03-04T06:06:56.518Z [32minfo[39m [NestApplication] Nest application successfully started +5ms
+2026-03-04T06:06:56.521Z [31merror[39m [NestApplication] Error: listen EADDRINUSE: address already in use :::3000 +3ms
+2026-03-04 11:36:56 [31merror[39m  [31munhandledRejection: listen EADDRINUSE: address already in use :::3000[39m
+[31mError: listen EADDRINUSE: address already in use :::3000[39m
+[31m    at Server.setupListenHandle [as _listen2] (node:net:1940:16)[39m
+[31m    at listenInCluster (node:net:1997:12)[39m
+[31m    at Server.listen (node:net:2102:7)[39m
+[31m    at ExpressAdapter.listen (E:\Bus\backend\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)[39m
+[31m    at E:\Bus\backend\node_modules\@nestjs\core\nest-application.js:183:30[39m
+[31m    at new Promise (<anonymous>)[39m
+[31m    at NestApplication.listen (E:\Bus\backend\node_modules\@nestjs\core\nest-application.js:173:16)[39m
+[31m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[31m    at async bootstrap (E:\Bus\backend\src\main.ts:82:3)[39m
