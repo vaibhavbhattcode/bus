@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { TicketPriority } from 'prisma-client-custom';
 
 export class CreateTicketDto {
   @IsString()
@@ -12,4 +13,8 @@ export class CreateTicketDto {
   @IsString()
   @IsNotEmpty()
   category: string;
+
+  @IsEnum(TicketPriority)
+  @IsNotEmpty()
+  priority: TicketPriority;
 }

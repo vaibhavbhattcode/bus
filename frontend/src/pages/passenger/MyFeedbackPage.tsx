@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import SEO from '../../components/SEO';
 import {
     Star, MessageSquare, Loader2, ThumbsUp,
-    Filter, ChevronDown, Ticket
+    Filter, Ticket
 } from 'lucide-react';
+
 
 interface MyFeedback {
     id: string;

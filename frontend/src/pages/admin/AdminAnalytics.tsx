@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
 import { format, subDays } from 'date-fns';
+import CustomDatePicker from '../../components/CustomDatePicker';
+import CustomSelect from '../../components/CustomSelect';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#14b8a6'];
 const GRADIENTS = [
@@ -156,13 +158,17 @@ function Empty({ text = 'No data for this period' }: { text?: string }) {
 export default function AdminAnalytics() {
   const [tab, setTab] = useState<'overview' | 'bookings' | 'users' | 'providers' | 'feedback'>('overview');
   const [groupBy, setGroupBy] = useState<'day' | 'week' | 'month'>('day');
-  const [dateRange, setDateRange] = useState(() => {
+  const [dateRange, setDateRange] = useState<{ start: Date | null, end: Date | null }>(() => {
     const end = new Date();
     const start = subDays(end, 30);
-    return { start: format(start, 'yyyy-MM-dd'), end: format(end, 'yyyy-MM-dd') };
+    return { start, end };
   });
 
-  const params = useMemo(() => ({ ...dateRange, groupBy }), [dateRange, groupBy]);
+  const params = useMemo(() => ({ 
+    start: dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : '', 
+    end: dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : '', 
+    groupBy 
+  }), [dateRange, groupBy]);
 
   const { data: ana, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin-analytics', params],
@@ -176,8 +182,9 @@ export default function AdminAnalytics() {
   });
 
   const preset = (days: number) => {
-    const end = new Date(); const start = subDays(end, days);
-    setDateRange({ start: format(start, 'yyyy-MM-dd'), end: format(end, 'yyyy-MM-dd') });
+    const end = new Date(); 
+    const start = subDays(end, days);
+    setDateRange({ start, end });
   };
 
   // Derived data
@@ -225,7 +232,7 @@ export default function AdminAnalytics() {
         <div>
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">Analytics Hub</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Marketing intelligence & platform performance · {dateRange.start} → {dateRange.end}
+            Marketing intelligence & platform performance · {dateRange.start ? format(dateRange.start, 'MMM d, yyyy') : '...'} → {dateRange.end ? format(dateRange.end, 'MMM d, yyyy') : '...'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -235,18 +242,29 @@ export default function AdminAnalytics() {
               {d}d
             </button>
           ))}
-          <input type="date" value={dateRange.start}
-            onChange={e => setDateRange(p => ({ ...p, start: e.target.value }))}
-            className="input py-1.5 text-sm" />
-          <span className="text-gray-400 text-sm">→</span>
-          <input type="date" value={dateRange.end}
-            onChange={e => setDateRange(p => ({ ...p, end: e.target.value }))}
-            className="input py-1.5 text-sm" />
-          <select value={groupBy} onChange={e => setGroupBy(e.target.value as any)} className="input py-1.5 text-sm pr-8">
-            <option value="day">Daily</option>
-            <option value="week">Weekly</option>
-            <option value="month">Monthly</option>
-          </select>
+          <CustomDatePicker
+            selected={dateRange.start}
+            onChange={d => setDateRange(p => ({ ...p, start: d }))}
+            placeholder="Start Date"
+            className="w-44"
+          />
+          <span className="text-gray-400 font-bold">→</span>
+          <CustomDatePicker
+            selected={dateRange.end}
+            onChange={d => setDateRange(p => ({ ...p, end: d }))}
+            placeholder="End Date"
+            className="w-44"
+          />
+          <CustomSelect 
+            value={groupBy} 
+            onChange={val => setGroupBy(val as any)} 
+            options={[
+              { value: 'day', label: 'Daily View' },
+              { value: 'week', label: 'Weekly View' },
+              { value: 'month', label: 'Monthly View' }
+            ]}
+            className="w-44"
+          />
           <button onClick={() => refetch()} disabled={isFetching}
             className="p-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
             <RefreshCw className={`h-4 w-4 text-gray-500 ${isFetching ? 'animate-spin' : ''}`} />

@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ErrorMessage from '../../components/ErrorMessage';
 import SeatSelection from '../../components/SeatSelection';
 import { useAuthStore } from '../../store/auth';
+import SEO from '../../components/SEO';
 
 const BookingTimer = ({ duration = 600, onExpire }: { duration?: number, onExpire?: () => void }) => {
     const [timeLeft, setTimeLeft] = useState(duration);
@@ -427,6 +428,11 @@ export default function NewBookingPage() {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 animate-fadeIn relative overflow-hidden">
+            <SEO
+                title={route ? `Book Bus – ${route.fromCity} to ${route.toCity}` : 'New Booking'}
+                description={route ? `Book your bus seat from ${route.fromCity} to ${route.toCity} on ${format(new Date(route.date), 'dd MMM yyyy')}. Secure payment, instant e-ticket.` : 'Complete your bus booking on BusBook.'}
+                noIndex={true}
+            />
             {/* Abstract Background Shapes */}
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-50/50 rounded-full blur-3xl opacity-30 translate-x-1/4 -translate-y-1/4"></div>

@@ -11,7 +11,7 @@ import { UserRole } from 'prisma-client-custom';
 export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
-  @Post()
+  @Post('tickets')
   create(@Request() req, @Body() createTicketDto: CreateTicketDto) {
     return this.supportService.create(req.user.id, createTicketDto);
   }

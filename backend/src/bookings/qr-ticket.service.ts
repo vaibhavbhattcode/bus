@@ -74,7 +74,18 @@ export class QrTicketService {
             .update(JSON.stringify({ bookingId, issuedAt: ticketData.issuedAt }))
             .digest('hex');
 
-        const qrPayload = JSON.stringify({ ...ticketData, sig: signature });
+        // Generate a human-readable text block for generic camera scanners
+        const qrPayload = `----- BUSBOOK E-TICKET -----
+PNR: ${ticketData.pnr}
+Passenger: ${ticketData.passengerName}
+From: ${ticketData.from}
+To: ${ticketData.to}
+Date: ${new Date(ticketData.date).toDateString()} at ${ticketData.departureTime}
+Seats: ${ticketData.seats?.join(', ') || 'N/A'}
+Status: ${ticketData.status}
+
+[Secure Verification Data]
+${JSON.stringify({ bookingId, issuedAt: ticketData.issuedAt, sig: signature })}`;
 
         // Generate QR as PNG data URL (high error correction for scanning in sunlight)
         const qrDataUrl = await QRCode.toDataURL(qrPayload, {
@@ -103,8 +114,17 @@ export class QrTicketService {
         reason?: string;
     }> {
         try {
-            const data = JSON.parse(qrPayload);
+            // Extract the JSON payload gracefully whether it is the new human-readable format or legacy raw JSON
+            const jsonPart = qrPayload.includes('[Secure Verification Data]') 
+                ? qrPayload.split('[Secure Verification Data]\n')[1]?.trim()
+                : qrPayload.trim();
+
+            const data = JSON.parse(jsonPart || '{}');
             const { sig, issuedAt, bookingId, ...fields } = data;
+
+            if (!bookingId || !issuedAt || !sig) {
+                return { valid: false, reason: 'Invalid QR code format - missing security fields' };
+            }
 
             // Re-verify HMAC signature
             const secret = this.configService.get<string>('JWT_SECRET', 'busbook-secret');

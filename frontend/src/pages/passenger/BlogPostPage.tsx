@@ -68,11 +68,16 @@ export default function BlogPostPage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 mix-blend-multiply animate-blob animation-delay-2000"></div>
       </div>
 
-      <SEO 
-        title={post.title} 
+      <SEO
+        title={post.title}
         description={post.excerpt}
         ogImage={post.coverImage}
         ogType="article"
+        articleAuthor={post.author}
+        articlePublishedTime={post.createdAt}
+        articleModifiedTime={post.updatedAt ?? post.createdAt}
+        articleTags={post.tags}
+        canonical={`https://busbook.com/blog/${post.slug ?? post.id}`}
       />
 
       <motion.div 

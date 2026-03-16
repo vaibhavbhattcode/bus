@@ -8,6 +8,7 @@ import { Booking } from '../../types';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '../../components/FeedbackModal';
 import ReportModal from '../../components/ReportModal';
+import SEO from '../../components/SEO';
 
 export default function MyBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -15,11 +16,13 @@ export default function MyBookingsPage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'>('ALL');
 
-  const { data: bookings, isLoading } = useQuery<Booking[]>({
+  const { data: rawBookings, isLoading } = useQuery<any>({
     queryKey: ['my-bookings'],
     queryFn: () => api.get('/bookings/my-bookings'),
     refetchInterval: 5000,
   });
+
+  const bookings: Booking[] = Array.isArray(rawBookings) ? rawBookings : (rawBookings?.data || []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -121,6 +124,11 @@ export default function MyBookingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20 relative overflow-hidden font-sans">
+      <SEO
+        title="My Bookings"
+        description="View, manage, and track all your bus bookings on BusBook. Access your upcoming trips, completed journeys, and cancellations."
+        noIndex={true}
+      />
        {/* Abstract Background Shapes */}
        <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[80px] opacity-40 translate-x-1/4 -translate-y-1/4"></div>

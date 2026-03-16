@@ -38,4 +38,35 @@ export class AlertsService {
       where: { id },
     });
   }
+
+  async findFavorites(userId: string) {
+    return this.prisma.favoriteRoute.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async addFavorite(userId: string, fromCity: string, toCity: string) {
+    return this.prisma.favoriteRoute.create({
+      data: {
+        user: { connect: { id: userId } },
+        fromCity,
+        toCity,
+      },
+    });
+  }
+
+  async removeFavorite(userId: string, id: string) {
+    const favorite = await this.prisma.favoriteRoute.findFirst({
+      where: { id, userId },
+    });
+
+    if (!favorite) {
+      throw new NotFoundException('Favorite route not found');
+    }
+
+    return this.prisma.favoriteRoute.delete({
+      where: { id },
+    });
+  }
 }

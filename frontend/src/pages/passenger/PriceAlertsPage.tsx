@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import SEO from '../../components/SEO';
 import {
-    Bell, Plus, Search, Trash2, Loader2, CheckCircle,
+    Bell, Plus, Search, Trash2, Loader2,
     MapPin, ArrowRight, X, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CustomDatePicker from '../../components/CustomDatePicker';
+import CustomSelect from '../../components/CustomSelect';
 
 interface PriceAlert {
     id: string;
@@ -43,7 +45,12 @@ export default function PriceAlertsPage() {
     const qc = useQueryClient();
     const [tab, setTab] = useState<'alerts' | 'favorites'>('alerts');
     const [showAlertForm, setShowAlertForm] = useState(false);
-    const [alertForm, setAlertForm] = useState({ fromCity: '', toCity: '', targetPrice: '', date: '' });
+    const [alertForm, setAlertForm] = useState<{fromCity: string, toCity: string, targetPrice: string, date: Date | null}>({ 
+        fromCity: '', 
+        toCity: '', 
+        targetPrice: '', 
+        date: null 
+    });
 
     const { data: alerts = [], isLoading: alertsLoading } = useQuery<PriceAlert[]>({
         queryKey: ['my-alerts'],
@@ -60,7 +67,7 @@ export default function PriceAlertsPage() {
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['my-alerts'] });
             setShowAlertForm(false);
-            setAlertForm({ fromCity: '', toCity: '', targetPrice: '', date: '' });
+            setAlertForm({ fromCity: '', toCity: '', targetPrice: '', date: null });
             toast.success('Price alert created!');
         },
         onError: () => toast.error('Failed to create alert.'),
@@ -238,7 +245,7 @@ export default function PriceAlertsPage() {
                                     fromCity: alertForm.fromCity,
                                     toCity: alertForm.toCity,
                                     targetPrice: alertForm.targetPrice ? Number(alertForm.targetPrice) : undefined,
-                                    date: alertForm.date || undefined,
+                                    date: alertForm.date ? alertForm.date.toISOString() : undefined,
                                 });
                             }}
                             className="p-6 space-y-4"
@@ -249,20 +256,22 @@ export default function PriceAlertsPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">From City</label>
-                                    <select required value={alertForm.fromCity} onChange={e => setAlertForm(p => ({ ...p, fromCity: e.target.value }))}
-                                        className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                        <option value="">Select...</option>
-                                        {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
+                                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">From City</label>
+                                    <CustomSelect
+                                        value={alertForm.fromCity}
+                                        onChange={v => setAlertForm(p => ({ ...p, fromCity: v }))}
+                                        options={CITIES.map(c => ({ value: c, label: c }))}
+                                        placeholder="Select..."
+                                    />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">To City</label>
-                                    <select required value={alertForm.toCity} onChange={e => setAlertForm(p => ({ ...p, toCity: e.target.value }))}
-                                        className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                        <option value="">Select...</option>
-                                        {CITIES.filter(c => c !== alertForm.fromCity).map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
+                                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">To City</label>
+                                    <CustomSelect
+                                        value={alertForm.toCity}
+                                        onChange={v => setAlertForm(p => ({ ...p, toCity: v }))}
+                                        options={CITIES.filter(c => c !== alertForm.fromCity).map(c => ({ value: c, label: c }))}
+                                        placeholder="Select..."
+                                    />
                                 </div>
                             </div>
                             <div>
@@ -272,10 +281,13 @@ export default function PriceAlertsPage() {
                                     className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Journey Date <span className="text-gray-400 font-normal">— optional</span></label>
-                                <input type="date" value={alertForm.date} onChange={e => setAlertForm(p => ({ ...p, date: e.target.value }))}
-                                    min={new Date().toISOString().split('T')[0]}
-                                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                                <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Journey Date <span className="text-gray-300 font-normal">— optional</span></label>
+                                <CustomDatePicker
+                                    selected={alertForm.date}
+                                    onChange={d => setAlertForm(p => ({ ...p, date: d }))}
+                                    minDate={new Date()}
+                                    placeholder="Select Date"
+                                />
                             </div>
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={() => setShowAlertForm(false)}

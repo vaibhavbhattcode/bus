@@ -43,9 +43,9 @@ export default function AdminAuditLogs() {
                     entityType: filterEntity || undefined,
                 },
             });
-            setLogs(response.data.data);
-            setTotalPages(response.data.meta.totalPages);
-            setTotalRecords(response.data.meta.total);
+            setLogs(response?.data || []);
+            setTotalPages(response?.meta?.totalPages || 1);
+            setTotalRecords(response?.meta?.total || 0);
         } catch (error) {
             toast.error('Failed to load audit logs');
         } finally {
@@ -146,14 +146,14 @@ export default function AdminAuditLogs() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
-                            {logs.length === 0 && !loading ? (
+                            {!logs || logs.length === 0 && !loading ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500 italic">
                                         No audit records match the current filters.
                                     </td>
                                 </tr>
                             ) : (
-                                logs.map((log, i) => (
+                                logs?.map((log, i) => (
                                     <motion.tr
                                         key={log.id}
                                         initial={{ opacity: 0, y: 10 }}

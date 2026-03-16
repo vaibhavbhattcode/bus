@@ -25,7 +25,7 @@ export default function AdminSettings() {
     const fetchSettings = async () => {
         try {
             const response: any = await api.get('/admin/settings');
-            setSettings(response.data);
+            setSettings(Array.isArray(response) ? response : (response?.data || []));
         } catch (error) {
             toast.error('Failed to load system settings');
         } finally {
@@ -206,7 +206,7 @@ export default function AdminSettings() {
 
                         <div className="border-t border-gray-100 divide-y divide-gray-100">
                             <AnimatePresence>
-                                {settings.length === 0 ? (
+                                {!settings || settings.length === 0 ? (
                                     <div className="p-8 text-center text-gray-500 text-sm italic">
                                         No dynamic settings exist yet in the database.
                                     </div>

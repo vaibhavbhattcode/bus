@@ -8,18 +8,33 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
-  @Post()
-  create(@Request() req, @Body() createAlertDto: CreateAlertDto) {
+  @Post('price')
+  createPriceAlert(@Request() req, @Body() createAlertDto: CreateAlertDto) {
     return this.alertsService.create(req.user.id, createAlertDto);
   }
 
-  @Get()
-  findAll(@Request() req) {
+  @Get('my-alerts')
+  findAllAlerts(@Request() req) {
     return this.alertsService.findAll(req.user.id);
   }
 
   @Delete(':id')
-  remove(@Request() req, @Param('id') id: string) {
+  removeAlert(@Request() req, @Param('id') id: string) {
     return this.alertsService.remove(req.user.id, id);
+  }
+
+  @Get('favorite-routes')
+  getFavorites(@Request() req) {
+    return this.alertsService.findFavorites(req.user.id);
+  }
+
+  @Post('favorite-route')
+  addFavorite(@Request() req, @Body() body: { fromCity: string; toCity: string }) {
+    return this.alertsService.addFavorite(req.user.id, body.fromCity, body.toCity);
+  }
+
+  @Delete('favorite-route/:id')
+  removeFavorite(@Request() req, @Param('id') id: string) {
+    return this.alertsService.removeFavorite(req.user.id, id);
   }
 }

@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
+import CustomDatePicker from './CustomDatePicker';
+import CustomSelect from './CustomSelect';
 
 interface CreatePromoCodeModalProps {
   isOpen: boolean;
@@ -18,8 +20,8 @@ export default function CreatePromoCodeModal({ isOpen, onClose }: CreatePromoCod
     value: '',
     minAmount: '',
     maxUses: '',
-    validFrom: new Date().toISOString().split('T')[0],
-    validUntil: '',
+    validFrom: new Date(),
+    validUntil: null as Date | null,
     status: 'ACTIVE',
   });
 
@@ -36,8 +38,8 @@ export default function CreatePromoCodeModal({ isOpen, onClose }: CreatePromoCod
         value: '',
         minAmount: '',
         maxUses: '',
-        validFrom: new Date().toISOString().split('T')[0],
-        validUntil: '',
+        validFrom: new Date(),
+        validUntil: null,
         status: 'ACTIVE',
       });
     },
@@ -55,8 +57,8 @@ export default function CreatePromoCodeModal({ isOpen, onClose }: CreatePromoCod
       value: Number(formData.value),
       minAmount: formData.minAmount ? Number(formData.minAmount) : undefined,
       maxUses: formData.maxUses ? Number(formData.maxUses) : undefined,
-      validFrom: new Date(formData.validFrom).toISOString(),
-      validUntil: new Date(formData.validUntil).toISOString(),
+      validFrom: formData.validFrom.toISOString(),
+      validUntil: formData.validUntil ? formData.validUntil.toISOString() : undefined,
     };
 
     createMutation.mutate(payload);
@@ -90,15 +92,16 @@ export default function CreatePromoCodeModal({ isOpen, onClose }: CreatePromoCod
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select
+              <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Type</label>
+              <CustomSelect
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="PERCENTAGE">Percentage (%)</option>
-                <option value="FIXED_AMOUNT">Fixed Amount (₹)</option>
-              </select>
+                onChange={(v) => setFormData({ ...formData, type: v })}
+                options={[
+                  { value: 'PERCENTAGE', label: 'Percentage (%)' },
+                  { value: 'FIXED_AMOUNT', label: 'Fixed Amount (₹)' },
+                ]}
+                className="w-full"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
@@ -141,23 +144,22 @@ export default function CreatePromoCodeModal({ isOpen, onClose }: CreatePromoCod
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Valid From</label>
-              <input
-                type="date"
-                required
-                value={formData.validFrom}
-                onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Valid From</label>
+              <CustomDatePicker
+                selected={formData.validFrom}
+                onChange={(d) => setFormData({ ...formData, validFrom: d || new Date() })}
+                placeholder="Start Date"
+                className="w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Valid Until</label>
-              <input
-                type="date"
-                required
-                value={formData.validUntil}
-                onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Valid Until</label>
+              <CustomDatePicker
+                selected={formData.validUntil}
+                onChange={(d) => setFormData({ ...formData, validUntil: d })}
+                placeholder="Expiry Date"
+                className="w-full"
+                minDate={formData.validFrom}
               />
             </div>
           </div>

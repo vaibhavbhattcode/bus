@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
 import { api } from '../../lib/api';
-import { User, Mail, Phone, Lock, Calendar, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Phone, Lock, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { showSuccess } from '../../lib/errorHandler';
 import ErrorMessage from '../../components/ErrorMessage';
 import SEO from '../../components/SEO';
@@ -10,6 +10,8 @@ import PincodeCityStateFields from '../../components/PincodeCityStateFields';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import AuthLayout from '../../components/AuthLayout';
 import { Shield, Ticket, Star } from 'lucide-react';
+import CustomDatePicker from '../../components/CustomDatePicker';
+import { format, parseISO } from 'date-fns';
 
 const PASSWORD_MIN = 8;
 const PHONE_REGEX = /^[6-9]\d{9}$/;
@@ -215,12 +217,12 @@ export default function PassengerRegisterPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Date of Birth" error={fieldErrors.dateOfBirth}>
-            <div className="relative">
-              <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input type="date" value={formData.dateOfBirth} onChange={set('dateOfBirth')}
-                max={new Date().toISOString().split('T')[0]}
-                className={`${inputCls(fieldErrors.dateOfBirth)} pl-10`} />
-            </div>
+            <CustomDatePicker
+              selected={formData.dateOfBirth ? parseISO(formData.dateOfBirth) : null}
+              onChange={d => setFormData(f => ({ ...f, dateOfBirth: d ? format(d, 'yyyy-MM-dd') : '' }))}
+              placeholder="Select Birth Date"
+              maxDate={new Date()}
+            />
           </Field>
           <Field label="Alternate Phone" error={fieldErrors.alternatePhone}>
             <div className="relative">

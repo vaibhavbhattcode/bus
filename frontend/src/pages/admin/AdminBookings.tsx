@@ -10,6 +10,8 @@ import {
 import toast from 'react-hot-toast';
 import { exportToCSV } from '../../utils/exportUtils';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomDatePicker from '../../components/CustomDatePicker';
+import CustomSelect from '../../components/CustomSelect';
 
 const fadeUpVariant = {
   hidden: { opacity: 0, y: 20 },
@@ -58,47 +60,14 @@ const PAYMENT_STATUS: Record<string, { cls: string; icon: any }> = {
   PAID: { cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
   FAILED: { cls: 'bg-red-50 text-red-700 border-red-200', icon: XCircle },
   REFUNDED: { cls: 'bg-blue-50 text-blue-700 border-blue-200', icon: CreditCard },
-  PENDING: { cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
 };
 
 function StatusPill({ label, config }: { label: string; config: { cls: string; icon: any } }) {
-  const Icon = config.icon;
+  const Icon = config.icon || Clock;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${config.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${config.cls}`}>
       <Icon className="h-3 w-3" />{label}
     </span>
-  );
-}
-
-/* ── filter pill ──────────────────────────────────────────────────────────── */
-function Pill({ label, value, options, onChange }: { label: string; value: string; options: { v: string; l: string }[]; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, []);
-  const current = options.find(o => o.v === value);
-  const active = value !== 'all' && value !== '';
-  return (
-    <div className="relative" ref={ref}>
-      <button onClick={() => setOpen(p => !p)}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400'}`}>
-        {label}: <span className="font-bold">{current?.l ?? value}</span>
-        {active && <X className="h-3 w-3 ml-1 opacity-80" onClick={(e) => { e.stopPropagation(); onChange('all'); }} />}
-      </button>
-      {open && (
-        <div className="absolute top-full mt-1 left-0 z-50 bg-white border border-gray-200 rounded-xl shadow-xl min-w-[140px] py-1">
-          {options.map(o => (
-            <button key={o.v} onClick={() => { onChange(o.v); setOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${value === o.v ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-gray-50'}`}>
-              {o.l}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -106,8 +75,8 @@ function Pill({ label, value, options, onChange }: { label: string; value: strin
 export default function AdminBookings() {
   const [status, setStatus] = useState('all');
   const [paymentStatus, setPaymentStatus] = useState('all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -121,8 +90,8 @@ export default function AdminBookings() {
       if (status !== 'all') p.set('status', status);
       if (paymentStatus !== 'all') p.set('paymentStatus', paymentStatus);
       if (debouncedSearch) p.set('search', debouncedSearch.trim());
-      if (startDate) p.set('startDate', startDate);
-      if (endDate) p.set('endDate', endDate);
+      if (startDate) p.set('startDate', format(startDate, 'yyyy-MM-dd'));
+      if (endDate) p.set('endDate', format(endDate, 'yyyy-MM-dd'));
       return api.get<{ data: any[]; meta: any }>(`/admin/bookings?${p}`);
     },
     placeholderData: keepPreviousData,
@@ -168,12 +137,18 @@ export default function AdminBookings() {
   };
 
   const STATUS_OPTS = [
-    { v: 'all', l: 'All' }, { v: 'PENDING', l: 'Pending' },
-    { v: 'CONFIRMED', l: 'Confirmed' }, { v: 'COMPLETED', l: 'Completed' }, { v: 'CANCELLED', l: 'Cancelled' },
+    { value: 'all', label: 'All Status' }, 
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'CONFIRMED', label: 'Confirmed' }, 
+    { value: 'COMPLETED', label: 'Completed' }, 
+    { value: 'CANCELLED', label: 'Cancelled' },
   ];
   const PAY_OPTS = [
-    { v: 'all', l: 'All' }, { v: 'PENDING', l: 'Pending' },
-    { v: 'PAID', l: 'Paid' }, { v: 'FAILED', l: 'Failed' }, { v: 'REFUNDED', l: 'Refunded' },
+    { value: 'all', label: 'All Payments' }, 
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'PAID', label: 'Paid' }, 
+    { value: 'FAILED', label: 'Failed' }, 
+    { value: 'REFUNDED', label: 'Refunded' },
   ];
 
   // summary counts from existing data
@@ -274,25 +249,43 @@ export default function AdminBookings() {
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X className="h-3.5 w-3.5" /></button>}
         </div>
 
-        {/* Filter pills */}
-        <Pill label="Status" value={status} options={STATUS_OPTS} onChange={setStatus} />
-        <Pill label="Payment" value={paymentStatus} options={PAY_OPTS} onChange={setPaymentStatus} />
+        {/* Filter pills replaced with CustomSelect for premium feel */}
+        <CustomSelect 
+          value={status} 
+          options={STATUS_OPTS} 
+          onChange={setStatus} 
+          className="w-44"
+          placeholder="Status"
+        />
+        
+        <CustomSelect 
+          value={paymentStatus} 
+          options={PAY_OPTS} 
+          onChange={setPaymentStatus} 
+          className="w-44"
+          placeholder="Payment"
+        />
 
         {/* Date range */}
-        <div className="flex items-center gap-1">
-          <div className="relative">
-            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
-            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setPage(1); }}
-              className="pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
-          </div>
-          <span className="text-gray-400 text-xs">→</span>
-          <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setPage(1); }}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+        <div className="flex items-center gap-2">
+          <CustomDatePicker
+            selected={startDate}
+            onChange={setStartDate}
+            placeholder="From Date"
+            className="w-40"
+          />
+          <span className="text-gray-400 font-bold">→</span>
+          <CustomDatePicker
+            selected={endDate}
+            onChange={setEndDate}
+            placeholder="To Date"
+            className="w-40"
+          />
         </div>
 
         {hasFilter && (
-          <button onClick={() => { setStatus('all'); setPaymentStatus('all'); setStartDate(''); setEndDate(''); setSearch(''); }}
-            className="px-3 py-2 text-xs text-red-600 hover:bg-red-50 rounded-xl border border-red-200 transition-colors font-semibold">
+          <button onClick={() => { setStatus('all'); setPaymentStatus('all'); setStartDate(null); setEndDate(null); setSearch(''); }}
+            className="px-4 h-[52px] text-xs text-red-600 hover:bg-red-50 rounded-2xl border-2 border-red-50 transition-all font-black uppercase tracking-widest">
             Clear All
           </button>
         )}
@@ -306,7 +299,7 @@ export default function AdminBookings() {
           <Ticket className="h-12 w-12 text-gray-200 mb-3" />
           <p className="text-gray-500 font-semibold">No bookings found</p>
           <p className="text-gray-400 text-sm mt-1">{search ? `No results for "${search}"` : 'Try adjusting the filters'}</p>
-          {hasFilter && <button onClick={() => { setStatus('all'); setPaymentStatus('all'); setStartDate(''); setEndDate(''); setSearch(''); }}
+          {hasFilter && <button onClick={() => { setStatus('all'); setPaymentStatus('all'); setStartDate(null); setEndDate(null); setSearch(''); }}
             className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold">Clear filters</button>}
         </motion.div>
       ) : (

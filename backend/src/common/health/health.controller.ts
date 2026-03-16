@@ -18,10 +18,11 @@ export class HealthController {
     @ApiOperation({ summary: 'Check system health (DB, Redis, memory)' })
     async check(): Promise<HealthCheckResult> {
         return this.health.check([
-            // Database connectivity
+            // Database connectivity — works with any MongoDB deployment (Atlas or self-hosted)
             async (): Promise<HealthIndicatorResult> => {
                 try {
-                    await this.prisma.$runCommandRaw({ ping: 1 });
+                    // A lightweight read operation to confirm DB connectivity
+                    await this.prisma.systemSetting.findFirst({ select: { id: true } });
                     return { database: { status: 'up' } };
                 } catch {
                     return { database: { status: 'down', message: 'Cannot reach MongoDB' } };
@@ -48,34 +49,28 @@ export class HealthController {
                     },
                 };
             },
+            // Uptime liveness
+            async (): Promise<HealthIndicatorResult> => {
+                return { uptime: { status: 'up', uptimeSeconds: Math.floor(process.uptime()) } };
+            },
         ]);
     }
-}
 
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { HealthService, HealthCheckResult } from './health.service';
+    @Get('live')
+    @ApiOperation({ summary: 'Liveness probe — always returns 200 if process is alive' })
+    liveness() {
+        return { status: 'alive', timestamp: new Date().toISOString() };
+    }
 
-@ApiTags('Health')
-@Controller('health')
-export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
-
-  @Get()
-  @ApiOperation({ summary: 'Check system health (DB, Redis, memory, disk, uptime)' })
-  async check(): Promise<HealthCheckResult> {
-    return this.healthService.checkHealth();
-  }
-
-  @Get('live')
-  @ApiOperation({ summary: 'Liveness probe - basic health check' })
-  async liveness() {
-    return this.healthService.getLiveness();
-  }
-
-  @Get('ready')
-  @ApiOperation({ summary: 'Readiness probe - check if app is ready to serve traffic' })
-  async readiness() {
-    return this.healthService.getReadiness();
-  }
+    @Get('ready')
+    @ApiOperation({ summary: 'Readiness probe — confirms app is ready to serve traffic' })
+    async readiness() {
+        const heapMB = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
+        return {
+            status: 'ready',
+            uptimeSeconds: Math.floor(process.uptime()),
+            heapUsedMB: heapMB,
+            timestamp: new Date().toISOString(),
+        };
+    }
 }

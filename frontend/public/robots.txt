@@ -1,8 +1,38 @@
 User-agent: *
 Allow: /
+
+# Public pages — always crawlable
+Allow: /search
+Allow: /blog
+Allow: /about
+Allow: /contact
+Allow: /careers
+Allow: /privacy-policy
+Allow: /terms
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /reset-password
+Allow: /provider/register
+
+# Private / authenticated pages — do not index
 Disallow: /admin/
-Disallow: /provider/
-Disallow: /profile/
-Disallow: /checkout/
+Disallow: /provider/dashboard
+Disallow: /provider/routes
+Disallow: /provider/vehicles
+Disallow: /provider/bookings
+Disallow: /provider/earnings
+Disallow: /provider/reviews
+Disallow: /my-bookings
+Disallow: /bookings/
+Disallow: /profile
+Disallow: /wallet
+Disallow: /support/
+Disallow: /notifications
+Disallow: /price-alerts
+Disallow: /feedback
+
+# Search bots: crawl budget hints
+Crawl-delay: 1
 
 Sitemap: https://busbook.com/sitemap.xml

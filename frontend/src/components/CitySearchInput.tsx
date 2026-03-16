@@ -141,28 +141,42 @@ export default function CitySearchInput({
       </div>
 
       {/* Suggestions Dropdown */}
-      {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-200 top-full left-0">
-          {suggestions.map((suggestion) => (
-            <button
-              key={suggestion.place_id}
-              type="button"
-              className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
-              onClick={() => handleSelect(suggestion)}
-            >
-              <div className="p-2 bg-primary-50 rounded-lg text-primary-600 flex-shrink-0">
-                <MapPin className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {suggestion.address.city || suggestion.address.town || suggestion.address.village || suggestion.display_name.split(',')[0]}
-                </p>
-                <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[300px]">
-                   {suggestion.display_name}
-                </p>
-              </div>
-            </button>
-          ))}
+      {isOpen && (
+        <div className="absolute z-[1000] w-full mt-2 bg-white/95 rounded-2xl shadow-2xl border border-gray-100 max-h-72 overflow-auto backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 top-full left-0 p-1.5">
+          {isLoading ? (
+            <div className="py-8 text-center">
+              <Loader2 className="h-6 w-6 text-indigo-500 animate-spin mx-auto mb-3" />
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Scanning Network...</p>
+            </div>
+          ) : suggestions.length > 0 ? (
+            suggestions.map((suggestion) => (
+              <button
+                key={suggestion.place_id}
+                type="button"
+                className="w-full text-left px-4 py-3.5 hover:bg-gray-50 flex items-center gap-3 transition-all rounded-xl group/item mb-1 last:mb-0 border-b border-gray-50/50 last:border-0"
+                onClick={() => handleSelect(suggestion)}
+              >
+                <div className="p-2.5 bg-gray-50 rounded-xl text-gray-400 group-hover/item:bg-indigo-50 group-hover/item:text-indigo-600 transition-colors">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-gray-900 truncate tracking-tight">
+                    {suggestion.address.city || suggestion.address.town || suggestion.address.village || suggestion.display_name.split(',')[0]}
+                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 truncate opacity-60 uppercase tracking-tighter">
+                     {suggestion.display_name}
+                  </p>
+                </div>
+              </button>
+            ))
+          ) : query.length >= 3 ? (
+            <div className="py-8 text-center text-gray-400">
+               <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                  <MapPin className="h-5 w-5 opacity-20" />
+               </div>
+               <p className="text-[10px] font-black uppercase tracking-widest">No matching nodes found</p>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

@@ -3,17 +3,48 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description"
-    content="BusBook - The easiest way to book bus tickets online. Compare routes, prices, and amenities for a comfortable journey." />
-  <meta name="theme-color" content="#4f46e5" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
+  <!-- Fallback SEO (overridden per-page by react-helmet-async) -->
   <title>BusBook - Premium Bus Booking Platform</title>
+  <meta name="description"
+    content="BusBook - Book bus tickets online in seconds. Compare routes, prices, and amenities. Safe, comfortable, and affordable intercity bus travel across India." />
+  <meta name="keywords" content="bus booking, online bus tickets, intercity bus, luxury bus India, book bus online" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="author" content="BusBook" />
+
+  <!-- Open Graph Fallbacks -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BusBook" />
+  <meta property="og:locale" content="en_IN" />
+  <meta property="og:title" content="BusBook - Premium Bus Booking Platform" />
+  <meta property="og:description" content="Book bus tickets online in seconds. Compare routes, prices, and amenities." />
+  <meta property="og:image" content="https://busbook.com/icons/og-image.jpg" />
+  <meta property="og:url" content="https://busbook.com" />
+
+  <!-- Twitter Card Fallbacks -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@busbook" />
+  <meta name="twitter:title" content="BusBook - Premium Bus Booking Platform" />
+  <meta name="twitter:description" content="Book bus tickets online in seconds." />
+  <meta name="twitter:image" content="https://busbook.com/icons/og-image.jpg" />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.webmanifest" />
 </head>
 
 <body>
   <div id="root"></div>
-  <div id="datepicker-portal"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

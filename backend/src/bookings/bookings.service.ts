@@ -650,9 +650,24 @@ export class BookingsService {
 
     // Calculate refund amount
     const routeDate = new Date(booking.route.date);
-    const [hours, minutes] = booking.route.departureTime.split(':').map(Number);
+    // Parse departure time — supports both "HH:MM" (24h) and "H:MM AM/PM" (12h) formats
+    const rawTime = booking.route.departureTime.trim();
+    let depHours = 0;
+    let depMinutes = 0;
+    const ampmMatch = rawTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (ampmMatch) {
+      depHours = parseInt(ampmMatch[1], 10);
+      depMinutes = parseInt(ampmMatch[2], 10);
+      const period = ampmMatch[3].toUpperCase();
+      if (period === 'PM' && depHours !== 12) depHours += 12;
+      if (period === 'AM' && depHours === 12) depHours = 0;
+    } else {
+      const parts = rawTime.split(':').map(Number);
+      depHours = parts[0] || 0;
+      depMinutes = parts[1] || 0;
+    }
     const departureTime = new Date(routeDate);
-    departureTime.setHours(hours, minutes, 0, 0);
+    departureTime.setHours(depHours, depMinutes, 0, 0);
 
     const now = new Date();
     const diffInHours = (departureTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -770,8 +785,8 @@ export class BookingsService {
     return this.prisma.booking.update({
       where: { id },
       data: {
-        status: status as any,
-        paymentStatus: paymentStatus as any,
+        ...(status && { status: status as BookingStatus }),
+        ...(paymentStatus && { paymentStatus: paymentStatus as PaymentStatus }),
       },
     });
   }

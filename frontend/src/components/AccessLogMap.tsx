@@ -20,7 +20,7 @@ export default function AccessLogMap() {
     const { data: logs, isLoading } = useQuery({
         queryKey: ['admin-access-logs-map'],
         queryFn: async () => {
-            const res = await api.get('/admin/security/access-logs?limit=200').catch(() => []);
+            const res = await api.get('/admin/access-logs?limit=200').catch(() => []);
             return res as any;
         },
         staleTime: 60000,
@@ -29,7 +29,7 @@ export default function AccessLogMap() {
     const validLogs = useMemo(() => {
         // In a real app the IP is geocoded on the backend and saved to the DB
         // We filter logs that successfully have lat/long for map rendering
-        const safeLogs = (logs as AccessLog[]) || [];
+        const safeLogs = Array.isArray(logs) ? logs : (logs?.data || []);
         return safeLogs.filter((log: AccessLog) => log.latitude !== undefined && log.longitude !== undefined);
     }, [logs]);
 
