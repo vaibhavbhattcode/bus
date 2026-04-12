@@ -30,6 +30,7 @@ import { DestinationsModule } from './destinations/destinations.module';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { AccessLoggerMiddleware } from './common/middlewares/access-logger.middleware';
+import { RequestIdMiddleware } from './common/middlewares/request-id.middleware';
 import { BullModule } from '@nestjs/bull';
 import { HealthModule } from './common/health/health.module';
 import { WalletModule } from './wallet/wallet.module';
@@ -44,13 +45,30 @@ import { SeatPreferencesModule } from './seat-preferences/seat-preferences.modul
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3000),
         DATABASE_URL: Joi.string().required(),
-        JWT_SECRET: Joi.string().min(16).required(),
-        JWT_REFRESH_SECRET: Joi.string().min(16).default(Joi.ref('JWT_SECRET')),
+        JWT_SECRET: Joi.string().min(32).required(),
+        JWT_REFRESH_SECRET: Joi.string().min(32).required(),
         REDIS_HOST: Joi.string().default('localhost'),
         REDIS_PORT: Joi.number().default(6379),
-        SMTP_HOST: Joi.string().optional(),
-        SMTP_PORT: Joi.number().default(587),
+        REDIS_PASSWORD: Joi.string().optional().allow(''),
         FRONTEND_URL: Joi.string().default('http://localhost:5173'),
+        // Mail (optional — app runs without, but mail features won't work)
+        SMTP_HOST: Joi.string().optional().allow(''),
+        SMTP_PORT: Joi.number().default(587),
+        SMTP_USER: Joi.string().optional().allow(''),
+        SMTP_PASS: Joi.string().optional().allow(''),
+        SMTP_FROM: Joi.string().optional().allow(''),
+        // Razorpay (optional — app runs without, but payments won't work)
+        RAZORPAY_KEY_ID: Joi.string().optional().allow(''),
+        RAZORPAY_KEY_SECRET: Joi.string().optional().allow(''),
+        RAZORPAY_WEBHOOK_SECRET: Joi.string().optional().allow(''),
+        // Firebase (optional — app runs without, but push notifications won't work)
+        FIREBASE_PROJECT_ID: Joi.string().optional().allow(''),
+        FIREBASE_CLIENT_EMAIL: Joi.string().optional().allow(''),
+        FIREBASE_PRIVATE_KEY: Joi.string().optional().allow(''),
+        // Twilio (optional — app runs without, but SMS OTP won't work)
+        TWILIO_ACCOUNT_SID: Joi.string().optional().allow(''),
+        TWILIO_AUTH_TOKEN: Joi.string().optional().allow(''),
+        TWILIO_PHONE_NUMBER: Joi.string().optional().allow(''),
       }),
     }),
     ThrottlerModule.forRoot([{
@@ -73,6 +91,12 @@ import { SeatPreferencesModule } from './seat-preferences/seat-preferences.modul
           host: configService.get<string>('REDIS_HOST', 'localhost'),
           port: configService.get<number>('REDIS_PORT', 6379),
           password: configService.get<string>('REDIS_PASSWORD'),
+          // Fail fast when Redis is unavailable — prevents the
+          // "Reached max retries per request" log spam on Redis downtime
+          maxRetriesPerRequest: 0,
+          enableOfflineQueue: false,
+          connectTimeout: 5000,
+          lazyConnect: true,
         },
       }),
       inject: [ConfigService],
@@ -119,6 +143,8 @@ import { SeatPreferencesModule } from './seat-preferences/seat-preferences.modul
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AccessLoggerMiddleware).forRoutes('*');
+    consumer
+      .apply(RequestIdMiddleware, AccessLoggerMiddleware)
+      .forRoutes('*');
   }
 }

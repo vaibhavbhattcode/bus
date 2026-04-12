@@ -11,6 +11,26 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Build error files (project-specific) — never commit these
+build_errors*.txt
+compile_errors*.txt
+errors.log
+errors.txt
+ts_errors*.log
+ts_errors*.txt
+startup_errors*.txt
+startup_errors*.utf8.txt
+startup_logs*.txt
+startup_logs*.utf8.txt
+tsc_output*.txt
+tsc_check*.txt
+tsc_errors*.txt
+tsc_raw*.txt
+tsc*.log
+*.utf8.txt
+final_build.txt
+build_output.txt
+
 # OS
 .DS_Store
 
@@ -38,6 +58,24 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+.env.test
+
+# Sensitive files
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
 
 # Prisma
 *.db

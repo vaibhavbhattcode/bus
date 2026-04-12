@@ -9,6 +9,7 @@ import { PromoCodesModule } from '../promo-codes/promo-codes.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { RedisModule } from '../redis/redis.module';
+import { MailModule } from '../mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     PromoCodesModule,
     NotificationsModule,
     RedisModule,
+    MailModule,
     ConfigModule,
     forwardRef(() => PaymentsModule),
   ],

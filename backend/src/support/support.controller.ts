@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { SupportService } from './support.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -12,18 +13,21 @@ export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
   @Post('tickets')
-  create(@Request() req, @Body() createTicketDto: CreateTicketDto) {
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  create(@Request() req: any, @Body() createTicketDto: CreateTicketDto) {
     return this.supportService.create(req.user.id, createTicketDto);
   }
 
   @Get('my-tickets')
-  findMyTickets(@Request() req) {
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  findMyTickets(@Request() req: any) {
     return this.supportService.findMyTickets(req.user.id);
   }
 
   @Get('stats')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   getStats() {
     return this.supportService.getStats();
   }
@@ -31,7 +35,8 @@ export class SupportController {
   @Get('all-tickets')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  findAll(@Request() req) {
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  findAll(@Request() req: any) {
     const status = req.query.status as string;
     const page = req.query.page ? Number(req.query.page) : undefined;
     const limit = req.query.limit ? Number(req.query.limit) : undefined;
@@ -41,12 +46,14 @@ export class SupportController {
   @Get('tickets/:id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 50, ttl: 60000 } })
   findOne(@Param('id') id: string) {
     return this.supportService.findOne(id);
   }
 
   @Post('tickets/:id/reply')
-  addReply(@Request() req, @Param('id') id: string, @Body('message') message: string) {
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  addReply(@Request() req: any, @Param('id') id: string, @Body('message') message: string) {
     const isAdmin = req.user.role === UserRole.ADMIN;
     return this.supportService.addReply(id, req.user.id, message, isAdmin);
   }
@@ -54,6 +61,7 @@ export class SupportController {
   @Post('tickets/:id/resolve')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   resolve(@Param('id') id: string) {
     return this.supportService.resolve(id);
   }

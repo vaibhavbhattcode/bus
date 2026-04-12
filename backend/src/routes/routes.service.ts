@@ -4,6 +4,43 @@ import { CreateRouteDto } from './dto/create-route.dto';
 import { SearchRoutesDto, SortBy } from './dto/search-routes.dto';
 import { UpdateRouteDto } from './dto/update-route.dto';
 import { RedisService } from '../redis/redis.service';
+import { VehicleType, Route } from 'prisma-client-custom';
+
+export interface RouteSearchResult {
+  id: string;
+  fromCity: string;
+  toCity: string;
+  date: Date;
+  departureTime: string;
+  arrivalTime: string | null;
+  price: number;
+  availableSeats: number;
+  totalSeats: number;
+  isActive: boolean;
+  vehicle: {
+    id: string;
+    type: VehicleType;
+    name: string;
+    amenities: string[];
+    totalSeats: number;
+    provider: {
+      companyName: string;
+      rating: number;
+      totalReviews?: number;
+    };
+  };
+}
+
+interface RouteWhereInput {
+  deletedAt: null;
+  isActive: true;
+  fromCity?: { contains: string; mode: 'insensitive' };
+  toCity?: { contains: string; mode: 'insensitive' };
+  date?: { gte: Date; lt: Date };
+  availableSeats?: { gte: number };
+  price?: { gte?: number; lte?: number };
+  vehicle?: { providerId?: string; amenities?: { hasEvery: string[] }; type?: { in: VehicleType[] } };
+}
 
 @Injectable()
 export class RoutesService {
@@ -145,14 +182,14 @@ export class RoutesService {
     return route;
   }
 
-  async search(dto: SearchRoutesDto) {
+  async search(dto: SearchRoutesDto): Promise<RouteSearchResult[]> {
     const cacheKey = `search:${JSON.stringify(dto)}`;
-    const cachedResults = await this.redisService.get<any[]>(cacheKey);
+    const cachedResults = await this.redisService.get<RouteSearchResult[]>(cacheKey);
     if (cachedResults) {
       return cachedResults;
     }
 
-    const where: any = {
+    const where: RouteWhereInput = {
       deletedAt: null,
       isActive: true,
     };
@@ -281,7 +318,7 @@ export class RoutesService {
       orderBy,
     });
 
-    await this.redisService.set(cacheKey, results, 300); // Cache for 5 minutes
+    await this.redisService.set(cacheKey, results, 60); // Cache for 60s — balances freshness vs DB load
     return results;
   }
 

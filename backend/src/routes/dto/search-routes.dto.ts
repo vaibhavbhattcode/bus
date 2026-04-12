@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsDateString, IsNumber, Min, IsArray, IsEnum } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
+import { SanitizeString, SanitizeSearchQuery } from '../../common/decorators/sanitize.decorator';
 
 export enum SortBy {
   PRICE_ASC = 'price_asc',
@@ -12,10 +13,12 @@ export enum SortBy {
 export class SearchRoutesDto {
   @IsString()
   @IsOptional()
+  @SanitizeSearchQuery()
   fromCity?: string;
 
   @IsString()
   @IsOptional()
+  @SanitizeSearchQuery()
   toCity?: string;
 
   @IsDateString()
@@ -40,10 +43,12 @@ export class SearchRoutesDto {
 
   @IsOptional()
   @IsString()
+  @SanitizeString()
   busType?: string; // Comma separated 'AC', 'Sleeper', etc.
 
   @IsOptional()
   @IsString()
+  @SanitizeString()
   amenities?: string; // Comma separated
 
   @IsOptional()

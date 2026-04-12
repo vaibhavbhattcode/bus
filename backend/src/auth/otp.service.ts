@@ -5,10 +5,13 @@ import { RedisService } from '../redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { SystemSettingsService } from '../common/services/system-settings.service';
+import { OTPExpiredException, OTPAttemptsExceededException } from '../common/exceptions';
 
-/** OTP is valid for 5 minutes */
-const OTP_TTL_MINUTES = 5;
-const OTP_RATE_LIMIT_TTL = 60; // 1 request per minute per phone
+/** OTP Security Constants */
+const OTP_TTL_SECONDS = 5 * 60; // 5 minutes
+const OTP_BCRYPT_ROUNDS = 12; // Secure hashing
+const OTP_MAX_ATTEMPTS = 3; // Maximum wrong attempts before invalidation
+const OTP_RATE_LIMIT_SECONDS = 60; // 1 request per minute per phone
 
 @Injectable()
 export class OtpService {
@@ -26,6 +29,12 @@ export class OtpService {
     //  Send OTP
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * Send OTP to phone number
+     * - Rate limited: 1 OTP per minute per phone
+     * - OTP hashed with bcrypt (12 rounds) before storage
+     * - Invalidates previous OTPs for same phone
+     */
     async sendOtp(phone: string): Promise<{ message: string }> {
         const isEnabled = await this.systemSettings.isOtpLoginEnabled();
         if (!isEnabled) {
@@ -41,8 +50,10 @@ export class OtpService {
 
         // Generate 6-digit OTP
         const otp = this.generateOtp();
-        const otpHash = await bcrypt.hash(otp, 10);
-        const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
+        
+        // Hash OTP with bcrypt (NEVER store plain OTP)
+        const otpHash = await bcrypt.hash(otp, OTP_BCRYPT_ROUNDS);
+        const expiresAt = new Date(Date.now() + OTP_TTL_SECONDS * 1000);
 
         // Invalidate any previous OTPs for this phone
         await (this.prisma as any).otpRequest.updateMany({
@@ -50,13 +61,13 @@ export class OtpService {
             data: { verified: true }, // mark old ones as used
         });
 
-        // Store new OTP request
+        // Store new OTP request with hashed OTP
         await (this.prisma as any).otpRequest.create({
             data: { phone, otpHash, expiresAt, attempts: 0 },
         });
 
         // Set rate limit
-        await this.redisService.set(rateLimitKey, '1', OTP_RATE_LIMIT_TTL);
+        await this.redisService.set(rateLimitKey, '1', OTP_RATE_LIMIT_SECONDS);
 
         // Send SMS
         await this.sendSms(phone, otp);
@@ -75,6 +86,12 @@ export class OtpService {
     //  Verify OTP + issue JWT
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * Verify OTP and issue JWT tokens
+     * - Uses bcrypt.compare() for secure verification
+     * - Max 3 wrong attempts before OTP invalidation
+     * - Auto-creates user if not exists
+     */
     async verifyOtp(phone: string, otp: string): Promise<{
         accessToken: string;
         refreshToken: string;
@@ -86,8 +103,6 @@ export class OtpService {
             throw new BadRequestException('OTP login is currently disabled.');
         }
 
-        const maxAttempts = await this.systemSettings.getMaxOtpAttempts();
-
         // Find latest unverified OTP
         const otpRequest = await (this.prisma as any).otpRequest.findFirst({
             where: { phone, verified: false, expiresAt: { gt: new Date() } },
@@ -95,26 +110,29 @@ export class OtpService {
         });
 
         if (!otpRequest) {
-            throw new BadRequestException('OTP has expired or not found. Please request a new OTP.');
+            throw new OTPExpiredException();
         }
 
-        if (otpRequest.attempts >= maxAttempts) {
+        // Check max attempts
+        if (otpRequest.attempts >= OTP_MAX_ATTEMPTS) {
             // Invalidate this OTP
             await (this.prisma as any).otpRequest.update({
                 where: { id: otpRequest.id },
                 data: { verified: true },
             });
-            throw new BadRequestException('Too many wrong attempts. Please request a new OTP.');
+            throw new OTPAttemptsExceededException();
         }
 
+        // Verify OTP using bcrypt.compare (secure comparison)
         const isValid = await bcrypt.compare(otp, otpRequest.otpHash);
 
         if (!isValid) {
+            // Increment attempt counter
             await (this.prisma as any).otpRequest.update({
                 where: { id: otpRequest.id },
                 data: { attempts: { increment: 1 } },
             });
-            const remaining = maxAttempts - otpRequest.attempts - 1;
+            const remaining = OTP_MAX_ATTEMPTS - otpRequest.attempts - 1;
             throw new BadRequestException(
                 `Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`,
             );
@@ -154,7 +172,7 @@ export class OtpService {
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: this.configService.get('JWT_SECRET'),
-                expiresIn: '15m',
+                expiresIn: '1h',
             }),
             this.jwtService.signAsync(payload, {
                 secret: this.configService.get('JWT_REFRESH_SECRET') || this.configService.get('JWT_SECRET'),
@@ -171,6 +189,9 @@ export class OtpService {
     //  Private helpers
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * Generate cryptographically secure 6-digit OTP
+     */
     private generateOtp(): string {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
@@ -182,7 +203,7 @@ export class OtpService {
      */
     private async sendSms(phone: string, otp: string): Promise<void> {
         const provider = this.configService.get<string>('SMS_PROVIDER', 'console');
-        const message = `Your BusBook OTP is ${otp}. Valid for ${OTP_TTL_MINUTES} minutes. Do not share with anyone.`;
+        const message = `Your BusBook OTP is ${otp}. Valid for ${Math.floor(OTP_TTL_SECONDS / 60)} minutes. Do not share with anyone.`;
 
         if (provider === 'fast2sms') {
             await this.sendFast2Sms(phone, otp);

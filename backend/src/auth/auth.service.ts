@@ -20,11 +20,39 @@ import { NotificationType, UserRole } from 'prisma-client-custom';
 import { MailService } from '../mail/mail.service';
 import { RedisService } from '../redis/redis.service';
 
+// ─── Domain Interfaces ─────────────────────────────────────────────────────
+
+/** Safe user object returned after login — no password hash */
+export interface AuthenticatedUser {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string;
+  role: UserRole;
+  createdAt?: Date;
+  [key: string]: unknown; // allow additional DB fields
+}
+
+/** JWT access + refresh token pair */
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+}
+
+/** Full login response returned to the controller */
+export interface LoginResponse extends TokenPair {
+  user: Omit<AuthenticatedUser, 'password'>;
+}
+
 /** TTL constants – single source of truth */
 const RESET_TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
 const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 const ACCESS_TOKEN_EXPIRY = '1h';
 const REFRESH_TOKEN_EXPIRY = '7d';
+const BCRYPT_SALT_ROUNDS = 12; // Increased from 10 for better security
+const OTP_EXPIRY_SECONDS = 5 * 60; // 5 minutes
+const OTP_MAX_ATTEMPTS = 3; // Maximum wrong OTP attempts
+const ABSOLUTE_SESSION_EXPIRY_DAYS = 30; // Force re-login after 30 days
 
 @Injectable()
 export class AuthService {
@@ -42,47 +70,71 @@ export class AuthService {
   //  Helpers
   // ─────────────────────────────────────────────────────────────
 
-  /** Generate access + refresh token pair */
-  public async getTokens(userId: string, email: string | null, role: string) {
+  /** Generate access + refresh token pair with session tracking */
+  public async getTokens(userId: string, email: string | null, role: string): Promise<TokenPair> {
     const payload = { sub: userId, email: email ?? '', role };
+    const sessionStart = Math.floor(Date.now() / 1000);
+    
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, { expiresIn: ACCESS_TOKEN_EXPIRY }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: REFRESH_TOKEN_EXPIRY,
-        secret:
-          this.configService.get<string>('JWT_REFRESH_SECRET') ||
-          this.configService.get<string>('JWT_SECRET'),
-      }),
+      this.jwtService.signAsync(
+        { ...payload, sessionStart },
+        {
+          expiresIn: REFRESH_TOKEN_EXPIRY,
+          secret:
+            this.configService.get<string>('JWT_REFRESH_SECRET') ||
+            this.configService.get<string>('JWT_SECRET'),
+        }
+      ),
     ]);
+    
+    // Store refresh token in Redis for rotation tracking
+    await this.redisService.set(
+      `refresh:${userId}`,
+      refreshToken,
+      REFRESH_TOKEN_TTL_SECONDS
+    );
+    
+    // Store session start time for absolute expiry
+    await this.redisService.set(
+      `session:${userId}`,
+      sessionStart.toString(),
+      ABSOLUTE_SESSION_EXPIRY_DAYS * 24 * 60 * 60
+    );
+    
     return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  /** Strip sensitive fields from user object */
-  private sanitizeUser(user: Record<string, any>) {
-    const { password, ...safe } = user;
-    return safe;
+  /** Strip sensitive fields (e.g. password) from a user object */
+  private sanitizeUser(user: Record<string, unknown>): AuthenticatedUser {
+    const { password: _password, ...safe } = user;
+    return safe as AuthenticatedUser;
   }
 
   // ─────────────────────────────────────────────────────────────
   //  Auth flows
   // ─────────────────────────────────────────────────────────────
 
-  async validateUser(emailOrPhone: string, pass: string): Promise<any> {
+  async validateUser(emailOrPhone: string, pass: string): Promise<AuthenticatedUser | null> {
     const user = await this.usersService.findByEmailOrPhone(emailOrPhone);
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      return this.sanitizeUser(user as Record<string, any>);
+    if (user && (await bcrypt.compare(pass, user.password as string))) {
+      return this.sanitizeUser(user as Record<string, unknown>);
     }
     return null;
   }
 
-  async login(user: any) {
-    const tokens = await this.getTokens(user.id, user.email, user.role);
+  async login(user: AuthenticatedUser): Promise<LoginResponse> {
+    const tokens = await this.getTokens(
+      user.id,
+      user.email ?? null,
+      user.role as string,
+    );
     return {
       ...tokens,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
+        email: user.email ?? null,
         phone: user.phone,
         role: user.role,
         createdAt: user.createdAt,
@@ -91,7 +143,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 12);
+    const hashedPassword = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
     const user = await this.usersService.create({
       ...dto,
       password: hashedPassword,
@@ -119,7 +171,7 @@ export class AuthService {
     }
 
     const { confirmPassword, ...rest } = dto;
-    const hashedPassword = await bcrypt.hash(rest.password, 12);
+    const hashedPassword = await bcrypt.hash(rest.password, BCRYPT_SALT_ROUNDS);
     const payload: any = {
       ...rest,
       password: hashedPassword,
@@ -179,7 +231,7 @@ export class AuthService {
       ...userRest
     } = dto;
 
-    const hashedPassword = await bcrypt.hash(userRest.password, 12);
+    const hashedPassword = await bcrypt.hash(userRest.password, BCRYPT_SALT_ROUNDS);
     const user = await this.usersService.create({
       ...userRest,
       password: hashedPassword,
@@ -215,16 +267,11 @@ export class AuthService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  //  Token Management
+  //  Token Management with Rotation & Absolute Expiry
   // ─────────────────────────────────────────────────────────────
 
   async refreshTokens(refreshToken: string) {
-    // 1. Check blacklist
-    const isBlacklisted = await this.redisService.get(`blacklist:${refreshToken}`);
-    if (isBlacklisted) {
-      throw new UnauthorizedException('Refresh token has been revoked');
-    }
-
+    // 1. Verify token signature
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(refreshToken, {
@@ -236,13 +283,37 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) throw new UnauthorizedException('User not found');
+    const userId = payload.sub;
 
-    // 2. Blacklist old refresh token (Token Rotation – prevents replay attacks)
-    await this.blacklistToken(refreshToken, payload.exp);
+    // 2. Check if token matches stored token (rotation check)
+    const storedToken = await this.redisService.get<string>(`refresh:${userId}`);
+    if (!storedToken || storedToken !== refreshToken) {
+      // Token theft detected - invalidate all sessions
+      await this.logoutAllSessions(userId);
+      throw new UnauthorizedException('Token theft detected. All sessions have been logged out.');
+    }
 
-    // 3. Issue new token pair
+    // 3. Check absolute session expiry (30 days)
+    const sessionStart = await this.redisService.get<string>(`session:${userId}`);
+    if (sessionStart) {
+      const sessionAge = Math.floor(Date.now() / 1000) - parseInt(sessionStart);
+      const maxSessionAge = ABSOLUTE_SESSION_EXPIRY_DAYS * 24 * 60 * 60;
+      
+      if (sessionAge > maxSessionAge) {
+        await this.logoutAllSessions(userId);
+        throw new UnauthorizedException('Session expired. Please login again.');
+      }
+    }
+
+    // 4. Verify user still exists and is active
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
+    // 5. Invalidate old token and issue new pair (Token Rotation)
+    await this.redisService.del(`refresh:${userId}`);
+    
     return this.getTokens(user.id, user.email, user.role);
   }
 
@@ -253,20 +324,21 @@ export class AuthService {
           this.configService.get<string>('JWT_REFRESH_SECRET') ||
           this.configService.get<string>('JWT_SECRET'),
       });
-      await this.blacklistToken(refreshToken, payload.exp);
+      
+      // Remove refresh token from Redis
+      await this.redisService.del(`refresh:${payload.sub}`);
     } catch {
-      // Expired/invalid tokens are effectively logged out already
+      // Token already invalid/expired
     }
     return { success: true, message: 'Logged out successfully' };
   }
 
-  /** Store a token in Redis blacklist until its natural expiry */
-  private async blacklistToken(token: string, exp: number): Promise<void> {
-    const now = Math.floor(Date.now() / 1000);
-    const ttl = exp - now;
-    if (ttl > 0) {
-      await this.redisService.set(`blacklist:${token}`, 'true', ttl);
-    }
+  /** Logout all sessions for a user (security measure) */
+  private async logoutAllSessions(userId: string): Promise<void> {
+    await Promise.all([
+      this.redisService.del(`refresh:${userId}`),
+      this.redisService.del(`session:${userId}`),
+    ]);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -307,11 +379,14 @@ export class AuthService {
     const user = await this.usersService.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
     await this.usersService.updatePassword(userId, hashedPassword);
 
     // Invalidate the reset token immediately after use
     await this.redisService.del(`pwd_reset:${hashedToken}`);
+    
+    // Logout all sessions for security
+    await this.logoutAllSessions(userId);
 
     return { success: true, message: 'Password has been reset successfully' };
   }

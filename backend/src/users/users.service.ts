@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -32,10 +32,10 @@ export class UsersService {
       if (error.code === 'P2002') {
         const target = error.meta?.target;
         if (Array.isArray(target) && target.includes('phone')) {
-          throw new Error('User with this phone number already exists');
+          throw new ConflictException('User with this phone number already exists');
         }
         if (Array.isArray(target) && target.includes('email')) {
-          throw new Error('User with this email already exists');
+          throw new ConflictException('User with this email already exists');
         }
       }
       throw error;

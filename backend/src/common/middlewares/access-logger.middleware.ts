@@ -1,71 +1,57 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
+import { Injectable, NestMiddleware, Logger, Inject } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import * as geoip from 'geoip-lite';
 import { UAParser } from 'ua-parser-js';
 
 @Injectable()
 export class AccessLoggerMiddleware implements NestMiddleware {
     private readonly logger = new Logger(AccessLoggerMiddleware.name);
+    // Rate-limit error logging: only log Redis failures once per minute
+    private lastRedisErrorAt = 0;
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(@InjectQueue('metrics') private readonly metricsQueue: Queue) { }
 
     use(req: Request, res: Response, next: NextFunction) {
         const { method, originalUrl, ip } = req;
         const userAgent = req.headers['user-agent'] || '';
         const startTime = Date.now();
 
-        res.on('finish', async () => {
+        res.on('finish', () => {
             const { statusCode } = res;
             const durationMs = Date.now() - startTime;
 
-            // Ensure we don't log successful OPTIONS requests to avoid clutter
-            if (method === 'OPTIONS' && statusCode >= 200 && statusCode < 300) {
-                return;
-            }
+            if (method === 'OPTIONS' && statusCode >= 200 && statusCode < 300) return;
 
             const parser = new UAParser(userAgent);
             const browser = parser.getBrowser().name || 'Unknown';
             const os = parser.getOS().name || 'Unknown';
             const device = parser.getDevice().type || 'Desktop';
-
-            // Attempt to extract IP from common proxy headers if needed
             const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || ip || '127.0.0.1';
 
             let country = 'Unknown';
             let city = 'Unknown';
-
             if (clientIp) {
                 const geo = geoip.lookup(clientIp);
-                if (geo) {
-                    country = geo.country;
-                    city = geo.city;
-                }
+                if (geo) { country = geo.country; city = geo.city; }
             }
 
-            // @ts-ignore - The user property might be added by Auth guards later in the request lifecycle
+            // @ts-ignore
             const userId = req.user?.id || null;
 
-            try {
-                await this.prisma.accessLog.create({
-                    data: {
-                        method,
-                        url: originalUrl,
-                        statusCode,
-                        durationMs,
-                        ipAddress: clientIp,
-                        userAgent,
-                        browser,
-                        os,
-                        device,
-                        country,
-                        city,
-                        userId,
-                    },
-                });
-            } catch (error) {
-                this.logger.error(`Failed to save access log: ${error.message}`);
-            }
+            // Fire-and-forget via queue — does not block the response
+            this.metricsQueue.add('access-log', {
+                method, url: originalUrl, statusCode, durationMs,
+                ipAddress: clientIp, userAgent, browser, os, device,
+                country, city, userId,
+            }, { removeOnComplete: true, removeOnFail: true }).catch((err) => {
+                const now = Date.now();
+                if (now - this.lastRedisErrorAt > 60_000) {
+                    this.lastRedisErrorAt = now;
+                    this.logger.warn(`Access log queue unavailable (Redis down?): ${err.message}`);
+                }
+            });
         });
 
         next();

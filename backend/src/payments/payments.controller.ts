@@ -1,4 +1,4 @@
-import { Controller, Post, Body, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, UseGuards, Inject, forwardRef } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { BookingsService } from '../bookings/bookings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
+    @Inject(forwardRef(() => BookingsService))
     private readonly bookingsService: BookingsService,
   ) {}
 

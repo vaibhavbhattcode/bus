@@ -9,22 +9,23 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { SanitizeString, SanitizeEmail, SanitizePhone } from '../../common/decorators/sanitize.decorator';
 
 export class RegisterPassengerDto {
   @IsString()
   @IsNotEmpty({ message: 'Full name is required' })
-  @Transform(({ value }) => value?.trim())
+  @SanitizeString()
   @MaxLength(100)
   name: string;
 
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsOptional()
-  @Transform(({ value }) => value?.trim().toLowerCase())
+  @SanitizeEmail()
   email?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Phone number is required' })
-  @Transform(({ value }) => value?.replace(/\s/g, ''))
+  @SanitizePhone()
   @Matches(/^[6-9]\d{9}$/, {
     message: 'Phone must be a valid 10-digit Indian mobile number',
   })
@@ -46,19 +47,19 @@ export class RegisterPassengerDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => value?.trim())
+  @SanitizeString()
   @MaxLength(300)
   address?: string;
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => value?.trim())
+  @SanitizeString()
   @MaxLength(80)
   city?: string;
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => value?.trim())
+  @SanitizeString()
   @MaxLength(80)
   state?: string;
 
@@ -74,7 +75,7 @@ export class RegisterPassengerDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => value?.replace(/\s/g, ''))
+  @SanitizePhone()
   @Matches(/^[6-9]\d{9}$|^$/, {
     message: 'Alternate phone must be a valid 10-digit Indian mobile number',
   })

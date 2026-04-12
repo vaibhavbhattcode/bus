@@ -4,34 +4,59 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
-// import { ProviderStatus, VehicleType } from 'prisma-client-custom'; // Not strictly needed if not used in logic
+import { PaginationDto, getPaginationParams, createPaginatedResponse, PaginatedResponse } from '../common/dto/pagination.dto';
+import { Vehicle, Route } from 'prisma-client-custom';
 
 @Injectable()
 export class ProvidersService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Find provider by user ID with paginated vehicles
+   * Uses separate queries to avoid N+1 problem
+   */
   async findByUser(userId: string) {
+    // Get provider basic info first
     const provider = await this.prisma.provider.findUnique({
       where: { userId },
-      include: {
-        vehicles: {
-          where: { deletedAt: null },
-          include: {
-            routes: {
-              where: { deletedAt: null },
-              take: 10,
-              orderBy: { date: 'desc' },
-            },
-          },
-        },
-      },
     });
 
     if (!provider) {
       throw new NotFoundException('Provider not found');
     }
 
-    return provider;
+    // Get paginated vehicles separately with limited routes
+    const vehicles = await this.prisma.vehicle.findMany({
+      where: { 
+        providerId: provider.id,
+        deletedAt: null 
+      },
+      take: 10, // Limit vehicles for dashboard view
+      orderBy: { createdAt: 'desc' },
+      include: {
+        routes: {
+          where: { deletedAt: null },
+          take: 5, // Limit routes per vehicle
+          orderBy: { date: 'desc' },
+          select: {
+            id: true,
+            fromCity: true,
+            toCity: true,
+            date: true,
+            departureTime: true,
+            arrivalTime: true,
+            price: true,
+            availableSeats: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...provider,
+      vehicles,
+    };
   }
 
   async create(userId: string, dto: CreateProviderDto) {
@@ -158,12 +183,31 @@ export class ProvidersService {
     });
   }
 
-  async getVehicles(providerId: string) {
-    return this.prisma.vehicle.findMany({
-      where: { 
+  /**
+   * Get paginated vehicles for a provider with route counts
+   */
+  async getVehicles(
+    providerId: string,
+    pagination: PaginationDto = new PaginationDto()
+  ): Promise<PaginatedResponse<Vehicle & { routes: Pick<Route, 'id' | 'fromCity' | 'toCity' | 'date' | 'availableSeats' | 'isActive'>[] }>> {
+    const { skip, take } = getPaginationParams(pagination.page, pagination.limit);
+
+    // Get total count for pagination metadata
+    const total = await this.prisma.vehicle.count({
+      where: {
         providerId,
-        deletedAt: null, 
+        deletedAt: null,
       },
+    });
+
+    // Get paginated vehicles with selective route fields
+    const vehicles = await this.prisma.vehicle.findMany({
+      where: {
+        providerId,
+        deletedAt: null,
+      },
+      skip,
+      take,
       include: {
         routes: {
           where: {
@@ -177,11 +221,17 @@ export class ProvidersService {
             availableSeats: true,
             isActive: true,
           },
+          orderBy: {
+            date: 'desc',
+          },
+          take: 10, // Limit routes per vehicle in list view
         },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    return createPaginatedResponse(vehicles, total, pagination.page || 1, pagination.limit || 20);
   }
 }

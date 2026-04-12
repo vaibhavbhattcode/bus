@@ -1,11 +1,14 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class ApiMetricsInterceptor implements NestInterceptor {
-  constructor(private readonly prisma: PrismaService) {}
+  private lastRedisErrorAt = 0;
+
+  constructor(@InjectQueue('metrics') private readonly metricsQueue: Queue) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
@@ -15,36 +18,20 @@ export class ApiMetricsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: async () => {
+        next: () => {
           const res = context.switchToHttp().getResponse();
           const statusCode = res?.statusCode || 200;
-          const duration = Date.now() - start;
-          try {
-            await this.prisma.apiMetric.create({
-              data: {
-                method,
-                url,
-                statusCode,
-                durationMs: duration,
-                userId: user?.id || undefined,
-              },
-            });
-          } catch {
-            // swallow errors to not affect response
-          }
+          this.metricsQueue.add('api-metric', {
+            method, url, statusCode,
+            durationMs: Date.now() - start,
+            userId: user?.id || undefined,
+          }, { removeOnComplete: true, removeOnFail: true }).catch(() => {});
         },
-        error: async () => {
-          const duration = Date.now() - start;
-          try {
-            await this.prisma.apiMetric.create({
-              data: {
-                method,
-                url,
-                statusCode: 500,
-                durationMs: duration,
-              },
-            });
-          } catch {}
+        error: () => {
+          this.metricsQueue.add('api-metric', {
+            method, url, statusCode: 500,
+            durationMs: Date.now() - start,
+          }, { removeOnComplete: true, removeOnFail: true }).catch(() => {});
         },
       }),
     );
