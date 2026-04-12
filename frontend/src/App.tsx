@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from './store/auth';
 import Layout from './components/Layout';
 import PageLoader from './components/PageLoader';
@@ -111,17 +110,8 @@ function App() {
       <SocketProvider>
         <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="flex-grow flex flex-col w-full min-h-screen"
-            >
-              <Routes location={location} key={location.pathname}>
-                <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+          <Routes>
+            <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
                 <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
                 <Route path="/register/passenger" element={<GuestRoute><PassengerRegisterPage /></GuestRoute>} />
                 <Route path="/register/provider" element={<GuestRoute><ProviderRegisterPage /></GuestRoute>} />
@@ -396,8 +386,6 @@ function App() {
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>
-            </motion.div>
-          </AnimatePresence>
         </Suspense>
       </SocketProvider>
     </ErrorBoundary >

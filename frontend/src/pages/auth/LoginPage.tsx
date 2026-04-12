@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ emailOrPhone: '', password: '', phone: '', otp: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData(f => ({ ...f, [key]: e.target.value }));
@@ -50,6 +51,9 @@ export default function LoginPage() {
 
   const handleSuccess = (data: any) => {
     setAuth(data.user, data.access_token || data.accessToken);
+    if (keepSignedIn) {
+      localStorage.setItem('keepSignedIn', '1');
+    }
     navigate(data.user.role === 'ADMIN' ? '/admin/dashboard' : data.user.role === 'PROVIDER' ? '/provider/dashboard' : '/');
   };
 
@@ -116,8 +120,8 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 pt-1">
-                  <input type="checkbox" id="remember" className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                  <div className="flex items-center gap-2 pt-1">
+                  <input type="checkbox" id="remember" checked={keepSignedIn} onChange={e => setKeepSignedIn(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                   <label htmlFor="remember" className="text-sm text-gray-600">Keep me signed in</label>
                 </div>
               </>

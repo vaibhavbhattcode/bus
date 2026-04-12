@@ -8,6 +8,8 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.tsx'
 import './index.css'
 import './i18n'
+import { useAuthStore } from './store/auth'
+import axios from 'axios'
 
 const updateSW = registerSW({
   onNeedRefresh() {
@@ -36,22 +38,41 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 60 * 1000, // Data is fresh for 1 minute
-      gcTime: 5 * 60 * 1000, // Cache is kept for 5 minutes
+      staleTime: 60 * 1000,
+      gcTime: 5 * 60 * 1000,
     },
   },
 })
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <App />
-          <Toaster position="top-right" />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </HelmetProvider>
-  </React.StrictMode>,
-)
+// Silent refresh on startup: restore access token from httpOnly cookie.
+// If the cookie is expired/missing, the user stays logged-out gracefully.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+async function restoreSession() {
+  const { user } = useAuthStore.getState();
+  if (!user) return; // no stored user profile — nothing to restore
+  // Only attempt silent refresh if user previously chose "keep me signed in"
+  if (!localStorage.getItem('keepSignedIn')) return;
+  try {
+    const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
+    const token: string = res.data?.access_token ?? res.data?.data?.access_token ?? '';
+    if (token) useAuthStore.getState().setAccessToken(token);
+  } catch {
+    // Cookie expired or missing — clear stale user profile
+    useAuthStore.getState().logout();
+  }
+}
 
+restoreSession().finally(() => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <App />
+            <Toaster position="top-right" />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </React.StrictMode>,
+  )
+})

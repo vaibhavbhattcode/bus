@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { api } from '../../lib/api'; // keep for feature-flags and metrics (no service layer yet)
+import { adminService } from '../../services/admin.service';
+import { queryKeys } from '../../lib/queryKeys';
 import {
   Users, Bus, BookOpen,
   AlertCircle,
@@ -134,11 +136,12 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // ✅ Migrated: typed adminService + proper queryKeys
   const { data: dashboard, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['admin-dashboard'],
-    queryFn: () => api.get<any>('/admin/dashboard'),
-    staleTime: 30000,
-    refetchInterval: 60000,
+    queryKey: queryKeys.admin.dashboard,
+    queryFn: adminService.getDashboard,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
 
   const { data: flags } = useQuery({
@@ -146,7 +149,7 @@ export default function AdminDashboard() {
     queryFn: () => api.get<any[]>('/feature-flags').catch(() => []),
     retry: 0,
     refetchOnWindowFocus: false,
-    staleTime: 60000,
+    staleTime: 60_000,
   });
 
   const { data: metrics } = useQuery({
@@ -157,15 +160,16 @@ export default function AdminDashboard() {
         .catch(() => ({ totalRequests: 0, avgDurationMs: 0, errorRatePercent: 0 })),
     retry: 0,
     refetchOnWindowFocus: false,
-    refetchInterval: 30000,
+    refetchInterval: 30_000,
   });
 
+  // ✅ Migrated: typed adminService.getAnalytics
   const { data: analytics } = useQuery({
-    queryKey: ['admin-analytics'],
-    queryFn: () => api.get<any>('/admin/analytics').catch(() => null),
+    queryKey: queryKeys.admin.analytics(),
+    queryFn: () => adminService.getAnalytics().catch(() => null),
     retry: 0,
     refetchOnWindowFocus: false,
-    staleTime: 60000,
+    staleTime: 60_000,
   });
 
   const { data: growthData } = useQuery({
@@ -173,7 +177,7 @@ export default function AdminDashboard() {
     queryFn: () => api.get<any[]>('/admin/analytics/growth?months=6').catch(() => []),
     retry: 0,
     refetchOnWindowFocus: false,
-    staleTime: 300000,
+    staleTime: 300_000,
   });
 
   const toggleFlag = useMutation({
@@ -252,7 +256,7 @@ export default function AdminDashboard() {
                 className="flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-900"
               >
                 <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                  {dashboard.alerts.pendingProviders}
+                  {dashboard?.alerts?.pendingProviders}
                 </span>
                 Providers awaiting verification
                 <ArrowUpRight className="h-3 w-3" />
@@ -264,7 +268,7 @@ export default function AdminDashboard() {
                 className="flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-900"
               >
                 <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                  {dashboard.alerts.openTickets}
+                  {dashboard?.alerts?.openTickets}
                 </span>
                 Open support tickets
                 <ArrowUpRight className="h-3 w-3" />
@@ -325,8 +329,8 @@ export default function AdminDashboard() {
               <div className="flex items-end gap-2">
                 <span className="text-2xl font-bold text-gray-900">{dashboard?.today?.bookings || 0}</span>
                 {(dashboard?.today?.bookingsGrowth !== undefined) && (
-                  <span className={`text-xs font-medium mb-1 ${dashboard.today.bookingsGrowth >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                    {dashboard.today.bookingsGrowth >= 0 ? '+' : ''}{dashboard.today.bookingsGrowth}% vs yesterday
+                  <span className={`text-xs font-medium mb-1 ${(dashboard?.today?.bookingsGrowth ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {(dashboard?.today?.bookingsGrowth ?? 0) >= 0 ? '+' : ''}{dashboard?.today?.bookingsGrowth}% vs yesterday
                   </span>
                 )}
               </div>
@@ -338,8 +342,8 @@ export default function AdminDashboard() {
                   ₹{(dashboard?.today?.revenue || 0).toLocaleString()}
                 </span>
                 {(dashboard?.today?.revenueGrowth !== undefined) && (
-                  <span className={`text-xs font-medium mb-1 ${dashboard.today.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                    {dashboard.today.revenueGrowth >= 0 ? '+' : ''}{dashboard.today.revenueGrowth}% vs yesterday
+                  <span className={`text-xs font-medium mb-1 ${(dashboard?.today?.revenueGrowth ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {(dashboard?.today?.revenueGrowth ?? 0) >= 0 ? '+' : ''}{dashboard?.today?.revenueGrowth}% vs yesterday
                   </span>
                 )}
               </div>
@@ -564,7 +568,7 @@ export default function AdminDashboard() {
             <span className="text-xs text-gray-400">Latest 5 bookings</span>
           </div>
           <div className="space-y-3">
-            {dashboard.recentActivity.map((act: any) => (
+            {(dashboard?.recentActivity || []).map((act: any) => (
               <div key={act.id} className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
                 <div className="bg-primary-50 p-2 rounded-xl shrink-0">
                   <BookOpen className="h-4 w-4 text-primary-600" />

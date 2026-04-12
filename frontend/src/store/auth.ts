@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email?: string;
@@ -11,9 +11,10 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  // Access token lives in memory only — never written to localStorage.
+  // This prevents XSS attacks from stealing the token via document.cookie or localStorage.
+  // On page reload, the silent refresh flow (httpOnly cookie) restores the session.
   accessToken: string | null;
-  // NOTE: refresh token is stored in an httpOnly cookie by the server.
-  // It is NOT kept in JS-accessible storage to prevent XSS token theft.
   setAuth: (user: User, accessToken: string) => void;
   setAccessToken: (accessToken: string) => void;
   logout: () => void;
@@ -22,6 +23,8 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
+  // User profile (non-sensitive) persisted in localStorage for instant UI hydration on reload.
+  // Access token is NOT loaded from storage — it will be restored via silent refresh.
   user: (() => {
     try {
       return JSON.parse(localStorage.getItem('user') || 'null');
@@ -29,23 +32,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return null;
     }
   })(),
-  accessToken: localStorage.getItem('accessToken'),
+  accessToken: null, // always starts null; restored by silent refresh in api.ts
 
   setAuth: (user, accessToken) => {
-    // Only persist non-sensitive data
-    localStorage.setItem('accessToken', accessToken);
+    // Only persist non-sensitive profile data, never the token
     localStorage.setItem('user', JSON.stringify(user));
     set({ user, accessToken });
   },
 
   setAccessToken: (accessToken) => {
-    localStorage.setItem('accessToken', accessToken);
+    // In-memory only — no localStorage write
     set({ accessToken });
   },
 
   logout: () => {
-    localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('keepSignedIn');
     set({ user: null, accessToken: null });
   },
 
@@ -57,8 +59,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loadFromStorage: () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || 'null');
-      const accessToken = localStorage.getItem('accessToken');
-      set({ user, accessToken });
+      // accessToken intentionally not loaded — silent refresh will provide it
+      set({ user, accessToken: null });
     } catch {
       set({ user: null, accessToken: null });
     }

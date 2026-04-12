@@ -125,12 +125,12 @@ export default function HomePage() {
       />
 
       {/* Hero Section */}
-      <section className="relative min-h-[850px] flex items-center -mt-20 pt-20">
+      <section className="relative min-h-[780px] md:min-h-[850px] flex items-center -mt-20 pt-20">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden -z-10">
-          <div className="absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-primary-100/40 rounded-full blur-[100px] animate-blob mix-blend-multiply"></div>
-          <div className="absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-blue-100/40 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply"></div>
-          <div className="absolute top-[40%] left-[40%] w-[800px] h-[800px] bg-purple-100/40 rounded-full blur-[100px] animate-blob animation-delay-4000 mix-blend-multiply"></div>
+          <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-primary-100/40 rounded-full blur-[100px] animate-blob mix-blend-multiply"></div>
+          <div className="absolute bottom-[-20%] left-[-10%] w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply"></div>
+          <div className="absolute top-[40%] left-[40%] w-[600px] h-[600px] bg-purple-100/40 rounded-full blur-[100px] animate-blob animation-delay-4000 mix-blend-multiply"></div>
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
         </div>
 
@@ -150,7 +150,7 @@ export default function HomePage() {
               <span className="text-sm font-semibold text-gray-700 tracking-wide">Trusted by 2 Million+ Travelers</span>
             </motion.div>
 
-            <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
+            <motion.h1 variants={fadeInUp} className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
               Journey with <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 via-indigo-600 to-purple-600">
                 Unmatched Comfort
@@ -162,10 +162,10 @@ export default function HomePage() {
             </motion.p>
 
             {/* Search Box */}
-            <motion.div variants={fadeInUp} className="bg-white/70 backdrop-blur-xl border border-white/40 p-1 rounded-3xl shadow-2xl shadow-indigo-500/10 max-w-xl">
-              <div className="bg-white rounded-[1.3rem] p-6 border border-gray-100">
-                <form onSubmit={handleSearch} className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <motion.div variants={fadeInUp} className="bg-white/70 backdrop-blur-xl border border-white/40 p-1 rounded-3xl shadow-2xl shadow-indigo-500/10 w-full max-w-xl">
+              <div className="bg-white rounded-[1.3rem] p-5 sm:p-6 border border-gray-100">
+                <form onSubmit={handleSearch} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <CitySearchInput
                       label="From"
                       placeholder="Departure City"
@@ -182,7 +182,7 @@ export default function HomePage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Travel Date</label>
                       <CustomDatePicker
@@ -194,7 +194,7 @@ export default function HomePage() {
                         placeholder="Select Date"
                       />
                     </div>
-                    <button type="submit" className="w-full bg-gray-900 text-white h-[54px] rounded-xl font-bold text-lg hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 flex items-center justify-center gap-2 group">
+                    <button type="submit" className="w-full bg-gray-900 text-white h-[54px] rounded-xl font-bold text-base sm:text-lg hover:bg-primary-600 transition-all shadow-lg shadow-gray-900/20 flex items-center justify-center gap-2 group">
                       Search Buses
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -204,17 +204,17 @@ export default function HomePage() {
             </motion.div>
 
             {/* Quick Stats */}
-            <motion.div variants={fadeInUp} className="flex gap-8 pt-4 text-sm font-medium text-gray-500">
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 sm:gap-8 pt-4 text-sm font-medium text-gray-500">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
                 <span>Instant Refunds</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
                 <span>Verified Crew</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
                 <span>24/7 Support</span>
               </div>
             </motion.div>
@@ -584,54 +584,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-24 bg-gray-50/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-100/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-        <div className="container-custom relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">Experience the Premium Way to Travel</h2>
-            <p className="text-gray-600 text-lg">We don't just sell tickets; we provide a travel experience that's comfortable, safe, and reliable every single time.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { 
-                title: 'Safety First', 
-                desc: 'All our partners follow strict safety protocols and sanitization standards for every journey.',
-                icon: ShieldCheck,
-                color: 'bg-emerald-50 text-emerald-600'
-              },
-              { 
-                title: 'Best Price Guarantee', 
-                desc: 'Find a cheaper fare elsewhere and we will match it. No hidden charges, just honest pricing.',
-                icon: Zap,
-                color: 'bg-amber-50 text-amber-600'
-              },
-              { 
-                title: 'Live Tracking', 
-                desc: 'Keep your loved ones informed with real-time GPS tracking and expected arrival times.',
-                icon: MapPin,
-                color: 'bg-blue-50 text-blue-600'
-              }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <item.icon className="h-7 w-7" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

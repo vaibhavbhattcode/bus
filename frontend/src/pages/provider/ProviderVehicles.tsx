@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { 
-  Plus, Bus, Edit, Trash2, CheckCircle, XCircle, Layout, Armchair, 
-  Settings, AlertCircle, Download, MoreVertical, Shield, Fuel,
+  Plus, Bus, Edit, Trash2, XCircle, Layout, Armchair, 
+  Settings, Download, Shield, Fuel,
   Tv, Wind, Wifi, Coffee, Battery, Zap, Search, Filter
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -42,7 +42,10 @@ export default function ProviderVehicles() {
 
   const { data: vehicles, isLoading } = useQuery({
     queryKey: ['provider-vehicles'],
-    queryFn: () => api.get<any[]>('/providers/vehicles'),
+    queryFn: async () => {
+      const res = await api.get<any>('/providers/vehicles');
+      return res?.data || (Array.isArray(res) ? res : []);
+    },
     retry: false,
     staleTime: Infinity,
   });
@@ -203,7 +206,7 @@ export default function ProviderVehicles() {
     return Settings;
   };
 
-  const filteredVehicles = vehicles?.filter(v => 
+  const filteredVehicles = vehicles?.filter((v: any) => 
     v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );

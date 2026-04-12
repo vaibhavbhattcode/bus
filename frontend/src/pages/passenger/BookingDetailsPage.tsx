@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { format, differenceInHours } from 'date-fns';
 import { MapPin, Download, MessageCircle, Bus, Wifi, Battery, Coffee, CloudSun, AlertCircle, ArrowRight, ShieldCheck, Ticket, CreditCard, User } from 'lucide-react';
@@ -29,6 +29,7 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
 export default function BookingDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: booking, isLoading } = useQuery({
     queryKey: ['booking', id],
     queryFn: () => api.get<Booking>(`/bookings/${id}`),
@@ -138,7 +139,7 @@ export default function BookingDetailsPage() {
       await api.post(`/bookings/${id}/cancel`, { reason: 'User cancelled' });
       toast.success('Booking cancelled successfully');
       setShowCancelModal(false);
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel booking');
     }
@@ -371,8 +372,6 @@ export default function BookingDetailsPage() {
         bookingId: booking.id,
         amount: booking.totalAmount,
       });
-
-      console.log('Order created:', orderData);
 
       const { orderId, currency, amount, keyId } = orderData;
 

@@ -74,7 +74,10 @@ export default function ProviderRoutes() {
 
   const { data: vehicles } = useQuery({
     queryKey: ['provider-vehicles'],
-    queryFn: () => api.get<any[]>('/providers/vehicles'),
+    queryFn: async () => {
+      const res = await api.get<any>('/providers/vehicles');
+      return res?.data || (Array.isArray(res) ? res : []);
+    },
     retry: false,
     staleTime: Infinity,
   });

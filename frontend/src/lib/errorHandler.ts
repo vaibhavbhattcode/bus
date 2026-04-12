@@ -46,6 +46,8 @@ export function getErrorMessage(error: unknown): string {
           return errorData?.message || 'This record already exists.';
         case 422:
           return errorData?.message || 'Validation failed. Please check your input.';
+        case 429:
+          return errorData?.message || 'Too many attempts. Please wait a moment and try again.';
         case 500:
           return 'Server error. Please try again later.';
         case 503:

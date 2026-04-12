@@ -1,28 +1,23 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../../lib/api';
 import { format } from 'date-fns';
 import { CheckCircle, XCircle, AlertCircle, Ticket, Search, Bus, ArrowRight, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Booking } from '../../types';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '../../components/FeedbackModal';
 import ReportModal from '../../components/ReportModal';
 import SEO from '../../components/SEO';
+import { useMyBookings } from '../../hooks/useBookings';
+import type { BookingListItem } from '../../services/booking.service';
 
 export default function MyBookingsPage() {
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingListItem | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'>('ALL');
 
-  const { data: rawBookings, isLoading } = useQuery<any>({
-    queryKey: ['my-bookings'],
-    queryFn: () => api.get('/bookings/my-bookings'),
-    refetchInterval: 5000,
-  });
-
-  const bookings: Booking[] = Array.isArray(rawBookings) ? rawBookings : (rawBookings?.data || []);
+  // ✅ Migrated: typed hook with proper caching (no more raw api.get + 5s interval)
+  const { data: bookingsData, isLoading } = useMyBookings(1, 100);
+  const bookings: BookingListItem[] = bookingsData?.data ?? [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -154,26 +149,39 @@ export default function MyBookingsPage() {
 
         {/* Custom Tabs */}
         <div className="bg-white/80 backdrop-blur-md rounded-2xl p-1.5 shadow-sm border border-gray-200/50 mb-8 inline-flex flex-wrap gap-1">
-          {['ALL', 'UPCOMING', 'COMPLETED', 'CANCELLED'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
-                activeTab === tab
-                  ? 'text-primary-700 shadow-md bg-white ring-1 ring-gray-100'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {activeTab === tab && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-white rounded-xl -z-10"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">{tab.charAt(0) + tab.slice(1).toLowerCase()}</span>
-            </button>
-          ))}
+          {(['ALL', 'UPCOMING', 'COMPLETED', 'CANCELLED'] as const).map((tab) => {
+            const counts: Record<string, number> = {
+              ALL: bookings.length,
+              UPCOMING: bookings.filter(b => ['CONFIRMED','PENDING'].includes(b.status)).length,
+              COMPLETED: bookings.filter(b => b.status === 'COMPLETED').length,
+              CANCELLED: bookings.filter(b => b.status === 'CANCELLED').length,
+            };
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 relative overflow-hidden flex items-center gap-2 ${
+                  activeTab === tab
+                    ? 'text-primary-700 shadow-md bg-white ring-1 ring-gray-100'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-white rounded-xl -z-10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.charAt(0) + tab.slice(1).toLowerCase()}</span>
+                {counts[tab] > 0 && (
+                  <span className={`relative z-10 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
+                    activeTab === tab ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'
+                  }`}>{counts[tab]}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="space-y-6">
@@ -192,11 +200,13 @@ export default function MyBookingsPage() {
                 >
                   <Link
                     to={`/bookings/${booking.id}`}
-                    className="block bg-white border border-gray-200 rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 transition-all duration-300 relative"
+                    className="block bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-primary-500/8 hover:-translate-y-1 hover:border-primary-100 transition-all duration-300 relative group/card"
                   >
-                    {/* Ticket Decor */}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-r-full border-y border-r border-gray-200"></div>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-l-full border-y border-l border-gray-200"></div>
+                    {/* Ticket Punch Holes */}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-10 bg-gray-50 rounded-r-full border-y border-r border-gray-100 z-10"></div>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-10 bg-gray-50 rounded-l-full border-y border-l border-gray-100 z-10"></div>
+                    {/* Dashed separator line */}
+                    <div className="absolute left-5 right-5 top-1/2 -translate-y-1/2 border-t border-dashed border-gray-100 pointer-events-none hidden md:block"></div>
 
                     <div className="p-6 md:p-8">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
@@ -266,10 +276,10 @@ export default function MyBookingsPage() {
                         </div>
 
                         {/* Right Side: Price & Actions */}
-                        <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-4 border-t md:border-t-0 border-dashed border-gray-200 pt-6 md:pt-0 min-w-[140px]">
+                        <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-4 border-t md:border-t-0 border-dashed border-gray-100 pt-6 md:pt-0 min-w-[140px]">
                           <div className="text-right">
                              <p className="text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
-                             <div className="text-2xl font-black text-gray-900 group-hover:text-primary-600 transition-colors">
+                             <div className="text-2xl font-black text-gray-900 group-hover/card:text-primary-600 transition-colors">
                                 ₹{booking.totalAmount}
                              </div>
                           </div>
@@ -341,7 +351,7 @@ export default function MyBookingsPage() {
               setSelectedBooking(null);
             }}
             bookingId={selectedBooking.id}
-            providerId={selectedBooking.route?.vehicle?.providerId}
+            providerId={selectedBooking.route?.vehicle?.provider?.id}
             routeId={selectedBooking.route?.id}
           />
           <ReportModal
@@ -351,7 +361,7 @@ export default function MyBookingsPage() {
               setSelectedBooking(null);
             }}
             bookingId={selectedBooking.id}
-            providerId={selectedBooking.route?.vehicle?.providerId}
+            providerId={selectedBooking.route?.vehicle?.provider?.id}
             />
         </>
       )}

@@ -97,8 +97,6 @@ export default function NewBookingPage() {
                 amount: booking.totalAmount
             });
 
-            console.log('Order created:', orderData);
-
             const options = {
                 key: orderData.keyId,
                 amount: orderData.amount,
@@ -451,18 +449,18 @@ export default function NewBookingPage() {
                         ></div>
 
                         {[
-                            { step: 1, label: 'Seat Selection', icon: Users },
-                            { step: 2, label: 'Passenger Details', icon: User },
+                            { step: 1, label: 'Seats', icon: Users },
+                            { step: 2, label: 'Details', icon: User },
                             { step: 3, label: 'Payment', icon: CreditCard },
                         ].map((item) => (
-                            <div key={item.step} className="flex flex-col items-center gap-3">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-300 ${currentStep >= item.step
+                            <div key={item.step} className="flex flex-col items-center gap-2 sm:gap-3">
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-4 transition-all duration-300 ${currentStep >= item.step
                                     ? 'bg-primary-600 border-primary-100 text-white shadow-lg shadow-primary-500/30'
                                     : 'bg-white border-gray-100 text-gray-400'
                                     }`}>
-                                    {currentStep > item.step ? <CheckCircle2 className="h-6 w-6" /> : <item.icon className="h-5 w-5" />}
+                                    {currentStep > item.step ? <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" /> : <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />}
                                 </div>
-                                <span className={`text-xs font-bold uppercase tracking-wider ${currentStep >= item.step ? 'text-primary-600' : 'text-gray-400'
+                                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${currentStep >= item.step ? 'text-primary-600' : 'text-gray-400'
                                     }`}>{item.label}</span>
                             </div>
                         ))}
@@ -690,73 +688,94 @@ export default function NewBookingPage() {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        {/* Boarding & Drop Points */}
-                                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                                <MapPin className="h-5 w-5 text-primary-600" /> Boarding & Drop Points
-                                            </h3>
-                                            <div className="grid md:grid-cols-2 gap-8">
-                                                <div className="space-y-4">
-                                                    <label className="text-sm font-bold text-gray-700">Pickup Point</label>
-                                                    <div className="space-y-3">
-                                                        {(route.pickupPoints || []).map((point: string) => (
-                                                            <label key={point} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.pickupLocation === point ? 'border-primary-600 bg-primary-50' : 'border-gray-100 hover:border-gray-200'
-                                                                }`}>
-                                                                <input
-                                                                    type="radio"
-                                                                    name="pickup"
-                                                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                                                                    checked={formData.pickupLocation === point}
-                                                                    onChange={() => setFormData({ ...formData, pickupLocation: point })}
-                                                                />
-                                                                <span className="font-medium text-gray-900">{point}</span>
-                                                            </label>
-                                                        ))}
-                                                    </div>
+                                    {/* Boarding & Drop Points - separate card */}
+                                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white p-6 md:p-8">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                                            <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
+                                                <MapPin className="h-5 w-5" />
+                                            </div>
+                                            Boarding & Drop Points
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <label className="text-sm font-bold text-gray-700">Pickup Point</label>
+                                                <div className="space-y-3">
+                                                    {(route.pickupPoints || []).map((point: string) => (
+                                                        <label key={point} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.pickupLocation === point ? 'border-primary-600 bg-primary-50' : 'border-gray-100 hover:border-gray-200'
+                                                            }`}>
+                                                            <input
+                                                                type="radio"
+                                                                name="pickup"
+                                                                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                                                checked={formData.pickupLocation === point}
+                                                                onChange={() => setFormData({ ...formData, pickupLocation: point })}
+                                                            />
+                                                            <span className="font-medium text-gray-900">{point}</span>
+                                                        </label>
+                                                    ))}
+                                                    {(route.pickupPoints || []).length === 0 && (
+                                                        <div className="relative">
+                                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                            <input type="text" placeholder="Enter pickup location"
+                                                                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                                                                value={formData.pickupLocation}
+                                                                onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })} />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <label className="text-sm font-bold text-gray-700">Drop Point</label>
-                                                    <div className="space-y-3">
-                                                        {(route.dropPoints || []).map((point: string) => (
-                                                            <label key={point} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.dropLocation === point ? 'border-primary-600 bg-primary-50' : 'border-gray-100 hover:border-gray-200'
-                                                                }`}>
-                                                                <input
-                                                                    type="radio"
-                                                                    name="drop"
-                                                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                                                                    checked={formData.dropLocation === point}
-                                                                    onChange={() => setFormData({ ...formData, dropLocation: point })}
-                                                                />
-                                                                <span className="font-medium text-gray-900">{point}</span>
-                                                            </label>
-                                                        ))}
-                                                    </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-sm font-bold text-gray-700">Drop Point</label>
+                                                <div className="space-y-3">
+                                                    {(route.dropPoints || []).map((point: string) => (
+                                                        <label key={point} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.dropLocation === point ? 'border-primary-600 bg-primary-50' : 'border-gray-100 hover:border-gray-200'
+                                                            }`}>
+                                                            <input
+                                                                type="radio"
+                                                                name="drop"
+                                                                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                                                checked={formData.dropLocation === point}
+                                                                onChange={() => setFormData({ ...formData, dropLocation: point })}
+                                                            />
+                                                            <span className="font-medium text-gray-900">{point}</span>
+                                                        </label>
+                                                    ))}
+                                                    {(route.dropPoints || []).length === 0 && (
+                                                        <div className="relative">
+                                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                            <input type="text" placeholder="Enter drop location"
+                                                                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                                                                value={formData.dropLocation}
+                                                                onChange={(e) => setFormData({ ...formData, dropLocation: e.target.value })} />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="flex justify-between items-center pt-4">
-                                            <button
-                                                onClick={() => setCurrentStep(1)}
-                                                className="text-gray-500 font-bold hover:text-gray-700"
-                                            >
-                                                Back to Seats
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    if (!formData.passengerName || !formData.passengerPhone || !formData.passengerAge || !formData.passengerGender || !formData.pickupLocation || !formData.dropLocation) {
-                                                        toast.error('Please fill in all details');
-                                                        return;
-                                                    }
-                                                    setCurrentStep(3);
-                                                }}
-                                                className="btn btn-primary px-10 py-4 text-lg group shadow-[0_8px_30px_rgb(37,99,235,0.3)] hover:shadow-[0_8px_30px_rgb(37,99,235,0.5)] rounded-2xl hover:-translate-y-0.5 transition-all"
-                                            >
-                                                Next: Review & Pay
-                                                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform ml-2 inline-block" />
-                                            </button>
-                                        </div>
+                                    <div className="flex justify-between items-center pt-2">
+                                        <button
+                                            onClick={() => setCurrentStep(1)}
+                                            className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                                        >
+                                            ← Back to Seats
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (!formData.passengerName || !formData.passengerPhone || !formData.passengerAge || !formData.passengerGender || !formData.pickupLocation || !formData.dropLocation) {
+                                                    toast.error('Please fill in all details');
+                                                    return;
+                                                }
+                                                setCurrentStep(3);
+                                            }}
+                                            className="btn btn-primary px-8 sm:px-10 py-4 text-base sm:text-lg group shadow-[0_8px_30px_rgb(37,99,235,0.3)] hover:shadow-[0_8px_30px_rgb(37,99,235,0.5)] rounded-2xl hover:-translate-y-0.5 transition-all"
+                                        >
+                                            Next: Review & Pay
+                                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform ml-2 inline-block" />
+                                        </button>
                                     </div>
                                 </motion.div>
                             )}
@@ -1049,9 +1068,9 @@ export default function NewBookingPage() {
 
                             <button
                                 type="submit"
-                                form="booking-form"
-                                className="w-full btn btn-primary py-4 text-lg font-bold shadow-lg shadow-primary-500/30 rounded-xl hover:shadow-primary-500/50 hover:-translate-y-0.5 transition-all"
                                 disabled={createBookingMutation.isPending}
+                                className="w-full btn btn-primary py-4 text-lg font-bold shadow-lg shadow-primary-500/30 rounded-xl hover:shadow-primary-500/50 hover:-translate-y-0.5 transition-all"
+                                onClick={(e) => { e.preventDefault(); handleSubmit(e as any); }}
                             >
                                 {createBookingMutation.isPending ? (
                                     <span className="flex items-center justify-center gap-2">

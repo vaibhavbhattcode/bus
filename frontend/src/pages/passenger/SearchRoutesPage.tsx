@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, FormEvent } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { api } from '../../lib/api';
 import { format } from 'date-fns';
 import { MapPin, ArrowRight, Filter, Wifi, Zap, Coffee, ChevronDown, Bell, SlidersHorizontal, Bus, Star, TrendingUp, TrendingDown, Flame } from 'lucide-react';
 import { Route } from '../../types';
@@ -14,6 +13,9 @@ import CustomDatePicker from '../../components/CustomDatePicker';
 import CustomSelect from '../../components/CustomSelect';
 import CustomCheckbox from '../../components/CustomCheckbox';
 import CustomRange from '../../components/CustomRange';
+import { routeService } from '../../services/route.service';
+import { userService } from '../../services/user.service';
+import { queryKeys } from '../../lib/queryKeys';
 
 const RouteCardSkeleton = () => (
   <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm relative overflow-hidden">
@@ -108,16 +110,23 @@ export default function SearchRoutesPage() {
     }
   }, [urlSearchParams]);
 
-  const { data: routes, refetch, isLoading } = useQuery<Route[]>({
-    queryKey: ['routes', searchParams],
+  // ✅ Migrated: typed routeService + typed queryKeys (no more hardcoded strings)
+  const { data: routesResponse, refetch, isLoading } = useQuery({
+    queryKey: queryKeys.routes.search(searchParams.fromCity, searchParams.toCity, searchParams.date),
     queryFn: () =>
-      api.get(
-        `/routes/search?fromCity=${searchParams.fromCity}&toCity=${searchParams.toCity}&date=${searchParams.date}&seats=${searchParams.seats}`
-      ),
+      routeService.search({
+        from: searchParams.fromCity,
+        to: searchParams.toCity,
+        date: searchParams.date,
+        seats: searchParams.seats,
+      }),
     enabled: searching && !!searchParams.fromCity && !!searchParams.toCity,
     placeholderData: keepPreviousData,
-    staleTime: 30000, // 30 seconds
+    staleTime: 2 * 60_000, // routes fresh for 2 minutes
   });
+
+  // Routes data is now paginated — extract the array
+  const routes: Route[] = (routesResponse as any)?.data ?? (Array.isArray(routesResponse) ? routesResponse : []);
 
   // Calculate Duration Helper
   const calculateDuration = useCallback((dep: string, arr?: string) => {
@@ -158,13 +167,17 @@ export default function SearchRoutesPage() {
       return;
     }
     try {
-      const payload: any = { fromCity: searchParams.fromCity, toCity: searchParams.toCity };
-      if (alertPrice) payload.targetPrice = Number(alertPrice);
-      await api.post('/alerts', payload);
+      // ✅ Migrated: typed userService (no more raw api.post + any payload)
+      await userService.createPriceAlert({
+        type: 'PRICE_DROP',
+        fromCity: searchParams.fromCity,
+        toCity: searchParams.toCity,
+        ...(alertPrice ? { targetPrice: Number(alertPrice) } : {}),
+      });
       toast.success('Price alert created');
       setAlertPrice('');
     } catch (e) {
-      toast.error(api.getErrorMessage(e));
+      toast.error('Failed to create alert');
     }
   };
 
@@ -593,13 +606,13 @@ export default function SearchRoutesPage() {
                           </div>
 
                           {/* Journey Info */}
-                          <div className="flex-[2] flex items-center justify-between gap-4 w-full md:w-auto px-4 md:px-12 border-x border-gray-100/80">
+                          <div className="flex-[2] flex items-center justify-between gap-4 w-full md:w-auto px-4 md:px-8 border-x-0 md:border-x border-gray-100/80 py-4 md:py-0">
                             <div className="text-center">
-                              <p className="text-2xl font-black text-gray-900">{route.departureTime}</p>
+                              <p className="text-xl sm:text-2xl font-black text-gray-900">{route.departureTime}</p>
                               <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">{route.fromCity}</p>
                             </div>
 
-                            <div className="flex-1 flex flex-col items-center gap-2 max-w-[120px]">
+                            <div className="flex-1 flex flex-col items-center gap-2 max-w-[100px] sm:max-w-[120px]">
                               <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
                                 {calculateDuration(route.departureTime, route.arrivalTime)}
                               </span>
@@ -612,7 +625,7 @@ export default function SearchRoutesPage() {
                             </div>
 
                             <div className="text-center">
-                              <p className="text-2xl font-black text-gray-900">{route.arrivalTime || '--:--'}</p>
+                              <p className="text-xl sm:text-2xl font-black text-gray-900">{route.arrivalTime || '--:--'}</p>
                               <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">{route.toCity}</p>
                             </div>
                           </div>

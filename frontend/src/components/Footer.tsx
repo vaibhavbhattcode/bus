@@ -1,131 +1,202 @@
 import { Link } from 'react-router-dom';
-import { Bus, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Bus, Mail, Phone, MapPin, ArrowRight, Twitter, Linkedin, Instagram, Facebook, Youtube, ExternalLink } from 'lucide-react';
+
+const footerLinks = {
+  product: [
+    { label: 'Search Routes', path: '/search' },
+    { label: 'My Bookings', path: '/my-bookings' },
+    { label: 'Price Alerts', path: '/price-alerts' },
+    { label: 'My Wallet', path: '/wallet' },
+    { label: 'Track Bus', path: '/search' },
+  ],
+  company: [
+    { label: 'About Us', path: '/about' },
+    { label: 'Careers', path: '/careers' },
+    { label: 'Blog', path: '/blog' },
+    { label: 'Press Kit', path: '/about' },
+    { label: 'Partners', path: '/about' },
+  ],
+  support: [
+    { label: 'Help Center', path: '/support' },
+    { label: 'Contact Us', path: '/contact' },
+    { label: 'Safety', path: '/about' },
+    { label: 'Privacy Policy', path: '/privacy' },
+    { label: 'Terms of Service', path: '/terms' },
+  ],
+};
+
+const socialLinks = [
+  { label: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-sky-400' },
+  { label: 'Instagram', icon: Instagram, href: '#', color: 'hover:text-pink-400' },
+  { label: 'LinkedIn', icon: Linkedin, href: '#', color: 'hover:text-blue-400' },
+  { label: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-500' },
+  { label: 'YouTube', icon: Youtube, href: '#', color: 'hover:text-red-400' },
+];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-white border-t border-gray-100 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-          {/* Brand Column */}
-          <div className="space-y-6">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="bg-gradient-to-tr from-primary-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-all duration-300">
-                <Bus className="h-6 w-6 text-white" />
+    <footer className="bg-gray-950 text-gray-300 relative overflow-hidden">
+      {/* Top glowing orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-600/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Newsletter Banner */}
+      <div className="border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="bg-gradient-to-r from-primary-600/20 via-indigo-600/20 to-purple-600/20 rounded-3xl p-8 md:p-10 border border-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid opacity-10 rounded-3xl" />
+            <div className="relative flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                  Get exclusive travel deals
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Subscribe to our newsletter and save up to 30% on your next journey. No spam, ever.
+                </p>
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">BusBook</span>
-            </Link>
-            <p className="text-gray-500 leading-relaxed">
-              Experience the future of travel with our premium bus booking platform. Comfort, reliability, and style in every journey.
-            </p>
-            <div className="flex space-x-4">
-              <SocialLink href="#" icon={Facebook} />
-              <SocialLink href="#" icon={Twitter} />
-              <SocialLink href="#" icon={Instagram} />
-              <SocialLink href="#" icon={Linkedin} />
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-gray-900 font-bold mb-6">Quick Links</h3>
-            <ul className="space-y-4">
-              <FooterLink to="/search" label="Search Routes" />
-              <FooterLink to="/about" label="About Us" />
-              <FooterLink to="/careers" label="Careers" />
-              <FooterLink to="/blog" label="Travel Blog" />
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h3 className="text-gray-900 font-bold mb-6">Support</h3>
-            <ul className="space-y-4">
-              <FooterLink to="/contact" label="Help Center" />
-              <FooterLink to="/terms" label="Terms of Service" />
-              <FooterLink to="/privacy" label="Privacy Policy" />
-              <FooterLink to="/contact" label="Contact Us" />
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-gray-900 font-bold mb-6">Get in Touch</h3>
-            <ul className="space-y-4">
-              <li className="flex items-start space-x-3 text-gray-500">
-                <MapPin className="h-5 w-5 text-primary-500 shrink-0 mt-0.5" />
-                <span>123 Business Ave, Tech Park,<br />Bangalore, KA 560103</span>
-              </li>
-              <li className="flex items-center space-x-3 text-gray-500">
-                <Phone className="h-5 w-5 text-primary-500 shrink-0" />
-                <span>+91 8000 555 123</span>
-              </li>
-              <li className="flex items-center space-x-3 text-gray-500">
-                <Mail className="h-5 w-5 text-primary-500 shrink-0" />
-                <span>support@busbook.com</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Newsletter Subscription */}
-        <div className="border-t border-gray-100 pt-12 pb-8">
-          <div className="bg-primary-50 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="md:w-1/2">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Subscribe to our newsletter</h3>
-              <p className="text-gray-600">Get the latest updates, exclusive offers, and travel tips directly to your inbox.</p>
-            </div>
-            <div className="w-full md:w-1/2 max-w-md">
-              <form className="flex gap-3" onSubmit={(e) => e.preventDefault()}>
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="flex-1 px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              <div className="flex w-full md:w-auto gap-3">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 md:w-64 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary-500/60 focus:bg-white/15 transition-all text-sm"
                 />
-                <button type="submit" className="bg-gray-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all flex items-center gap-2 shadow-lg shadow-gray-900/20">
-                  Subscribe
-                  <ArrowRight className="h-4 w-4" />
+                <button className="flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold text-sm transition-all hover:-translate-y-0.5 shadow-lg shadow-primary-900/30 whitespace-nowrap">
+                  Subscribe <ArrowRight className="h-4 w-4" />
                 </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm">
-            © {currentYear} BusBook. All rights reserved.
-          </p>
-          <div className="flex space-x-6 text-sm text-gray-500">
-            <Link to="/privacy" className="hover:text-primary-600 transition-colors">Privacy</Link>
-            <Link to="/terms" className="hover:text-primary-600 transition-colors">Terms</Link>
-            <Link to="/sitemap" className="hover:text-primary-600 transition-colors">Sitemap</Link>
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+
+          {/* Brand Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Logo */}
+            <Link to="/" className="inline-flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary-500 to-indigo-600 rounded-xl blur opacity-50 group-hover:opacity-70 transition-opacity" />
+                <div className="relative bg-gradient-to-tr from-primary-600 to-indigo-600 p-2.5 rounded-xl shadow-lg">
+                  <Bus className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <span className="text-xl font-black text-white">BusBook</span>
+            </Link>
+
+            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+              India's most trusted platform for premium bus travel. Safe, reliable, and always on time — we redefine how India travels.
+            </p>
+
+            {/* Contact */}
+            <div className="space-y-3">
+              <a href="mailto:support@busbook.in" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-primary-600/20 flex items-center justify-center transition-colors">
+                  <Mail className="w-3.5 h-3.5" />
+                </div>
+                support@busbook.in
+              </a>
+              <a href="tel:+911800000000" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-primary-600/20 flex items-center justify-center transition-colors">
+                  <Phone className="w-3.5 h-3.5" />
+                </div>
+                1800-000-0000 (Toll Free)
+              </a>
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                  <MapPin className="w-3.5 h-3.5" />
+                </div>
+                Koramangala, Bangalore, India
+              </div>
+            </div>
+
+            {/* Socials */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map(({ label, icon: Icon, href, color }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className={`w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-500 ${color} transition-all hover:-translate-y-0.5`}
+                >
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Links Columns */}
+          {Object.entries(footerLinks).map(([section, links]) => (
+            <div key={section}>
+              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-5">
+                {section.charAt(0).toUpperCase() + section.slice(1)}
+              </h4>
+              <ul className="space-y-3">
+                {links.map(({ label, path }) => (
+                  <li key={label}>
+                    <Link
+                      to={path}
+                      className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1.5 group"
+                    >
+                      <span className="group-hover:translate-x-0.5 transition-transform">{label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* App Store Badges */}
+      <div className="border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <button className="flex items-center gap-2.5 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">
+                <span className="text-2xl">▶</span>
+                <div className="text-left">
+                  <p className="text-[10px] text-gray-500 leading-none">GET IT ON</p>
+                  <p className="text-white font-semibold text-xs leading-none mt-0.5">Google Play</p>
+                </div>
+              </button>
+              <button className="flex items-center gap-2.5 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">
+                <span className="text-2xl">🍎</span>
+                <div className="text-left">
+                  <p className="text-[10px] text-gray-500 leading-none">DOWNLOAD ON THE</p>
+                  <p className="text-white font-semibold text-xs leading-none mt-0.5">App Store</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+              <a href="https://www.cert-in.org.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-gray-400 transition-colors">
+                CERT-In Compliant <ExternalLink className="w-3 h-3" />
+              </a>
+              <span>•</span>
+              <span>256-bit SSL Encryption</span>
+              <span>•</span>
+              <span>PCI DSS Compliant</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-white/5 bg-black/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+            <p>© {new Date().getFullYear()} BusBook Technologies Pvt. Ltd. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link to="/privacy" className="hover:text-gray-400 transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-gray-400 transition-colors">Terms</Link>
+              <Link to="/contact" className="hover:text-gray-400 transition-colors">Cookies</Link>
+            </div>
           </div>
         </div>
       </div>
     </footer>
-  );
-}
-
-function SocialLink({ href, icon: Icon }: { href: string; icon: any }) {
-  return (
-    <a 
-      href={href} 
-      className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-all duration-300 hover:scale-110"
-    >
-      <Icon className="h-5 w-5" />
-    </a>
-  );
-}
-
-function FooterLink({ to, label }: { to: string; label: string }) {
-  return (
-    <li>
-      <Link to={to} className="text-gray-500 hover:text-primary-600 transition-colors inline-flex items-center group">
-        <span className="w-0 group-hover:w-2 h-0.5 bg-primary-600 mr-0 group-hover:mr-2 transition-all duration-300"></span>
-        {label}
-      </Link>
-    </li>
   );
 }

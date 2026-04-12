@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
-import { Calendar, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface CustomDatePickerProps {
@@ -10,20 +10,23 @@ interface CustomDatePickerProps {
   onChange: (date: Date | null) => void;
   placeholder?: string;
   className?: string;
+  wrapperClassName?: string;
   minDate?: Date;
   maxDate?: Date;
+  icon?: React.ReactNode;
 }
 
 export default function CustomDatePicker({ 
   selected, 
   onChange, 
   placeholder = "Select Date",
-  className = "",
+  wrapperClassName = "",
   minDate,
-  maxDate
+  maxDate,
+  icon: _icon,
 }: CustomDatePickerProps) {
   return (
-    <div className={`relative custom-datepicker-container ${className}`}>
+    <div className={`relative custom-datepicker-container ${wrapperClassName}`}>
       <DatePicker
         selected={selected}
         onChange={onChange}

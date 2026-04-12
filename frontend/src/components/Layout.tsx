@@ -513,14 +513,71 @@ export default function Layout() {
       </header>
 
       {/* ── Main content ───────────────────────────────────────── */}
-      <main className="flex-grow pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="animate-fadeIn">
+      <main className="flex-grow pt-16 pb-20 md:pb-12">
+        <div className="page-enter">
           <Outlet />
         </div>
       </main>
 
       <Footer />
       <SupportWidget />
+
+      {/* ── Mobile Bottom Navigation ───────────────────────────── */}
+      {isAuthenticated() && user && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] safe-area-pb">
+          <div className="flex items-center justify-around px-2 py-2">
+            {user.role === 'PASSENGER' && [
+              { path: '/', label: 'Home', icon: Home },
+              { path: '/search', label: 'Search', icon: Search },
+              { path: '/my-bookings', label: 'Bookings', icon: Ticket },
+              { path: '/wallet', label: 'Wallet', icon: Wallet },
+              { path: '/profile', label: 'Profile', icon: User },
+            ].map(({ path, label, icon: Icon }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link key={path} to={path}
+                  className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 min-w-[52px] ${
+                    isActive ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'
+                  }`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-200 ${
+                    isActive ? 'bg-primary-50' : ''
+                  }`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className={`text-[10px] font-bold tracking-tight ${
+                    isActive ? 'text-primary-600' : 'text-gray-400'
+                  }`}>{label}</span>
+                  {isActive && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-500 rounded-full" />}
+                </Link>
+              );
+            })}
+            {user.role === 'PROVIDER' && [
+              { path: '/provider/dashboard', label: 'Dashboard', icon: Home },
+              { path: '/provider/routes', label: 'Routes', icon: Search },
+              { path: '/provider/bookings', label: 'Bookings', icon: BookOpen },
+              { path: '/provider/earnings', label: 'Earnings', icon: DollarSign },
+              { path: '/profile', label: 'Profile', icon: User },
+            ].map(({ path, label, icon: Icon }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link key={path} to={path}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 min-w-[52px] ${
+                    isActive ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+                  }`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-200 ${
+                    isActive ? 'bg-violet-50' : ''
+                  }`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className={`text-[10px] font-bold tracking-tight ${
+                    isActive ? 'text-violet-600' : 'text-gray-400'
+                  }`}>{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

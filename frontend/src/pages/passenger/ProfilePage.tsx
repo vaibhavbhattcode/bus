@@ -4,19 +4,21 @@ import { User, Mail, Phone, Shield, Camera, Save, Lock, Smartphone, ShieldCheck,
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import SEO from '../../components/SEO';
-import { api } from '../../lib/api';
 import { format } from 'date-fns';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { userService } from '../../services/user.service';
+import { queryKeys } from '../../lib/queryKeys';
 
 export default function ProfilePage() {
   const { user, setAuth } = useAuthStore();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
 
-  // Fetch latest profile data including stats
-  const { data: profileData, refetch, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['user-profile'],
-    queryFn: () => api.get<any>('/users/profile'),
-    initialData: user,
+  // ✅ Migrated: typed userService + proper queryKeys
+  const { data: profileData, isLoading: isProfileLoading } = useQuery({
+    queryKey: queryKeys.users.profile,
+    queryFn: userService.getProfile,
+    initialData: user as any,
     retry: 1,
   });
 
@@ -26,13 +28,18 @@ export default function ProfilePage() {
     phone: user?.phone || '',
   });
 
-  const { data: seatPrefsData, refetch: refetchSeatPrefs } = useQuery({
-    queryKey: ['seat-preferences'],
-    queryFn: () => api.get<any>('/seat-preferences'),
+  // ✅ Migrated: typed seat preferences query
+  const { data: seatPrefsData } = useQuery({
+    queryKey: queryKeys.users.seatPreferences,
+    queryFn: userService.getSeatPreferences,
     retry: 1,
   });
 
-  const [seatPrefs, setSeatPrefs] = useState({
+  const [seatPrefs, setSeatPrefs] = useState<{
+    preferredSide: 'window' | 'aisle' | 'middle' | '';
+    preferredRow: 'front' | 'middle' | 'back' | '';
+    avoidLastRow: boolean;
+  }>({
     preferredSide: '',
     preferredRow: '',
     avoidLastRow: false,
@@ -64,20 +71,25 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const updatedUser = await api.patch<any>('/users/profile', formData);
-      await api.put('/seat-preferences', seatPrefs);
+      // ✅ Migrated: typed userService calls (no more raw api.patch/put + any)
+      const updatedUser = await userService.updateProfile(formData);
+      await userService.updateSeatPreferences({
+        preferredSide: seatPrefs.preferredSide || undefined,
+        preferredRow: seatPrefs.preferredRow || undefined,
+        avoidLastRow: seatPrefs.avoidLastRow,
+      });
 
-      // Update local store with updated user data (access token unchanged)
       const accessToken = useAuthStore.getState().accessToken ?? '';
-      setAuth(updatedUser, accessToken);
+      setAuth(updatedUser as any, accessToken);
 
-      refetch(); // Refresh profile data
-      refetchSeatPrefs(); // Refresh seat prefs
+      // Invalidate cache so both queries refresh automatically
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.profile });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.seatPreferences });
       toast.success('Profile and preferences updated successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to update profile';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -113,19 +125,19 @@ export default function ProfilePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
       >
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
 
           {/* Left Column: Profile Card */}
           <motion.div variants={itemVariants} className="lg:col-span-1">
-            <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/50 border border-gray-100 text-center relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-primary-500 to-indigo-600"></div>
+            <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 text-center relative overflow-hidden group sticky top-24">
+              <div className="absolute top-0 left-0 w-full h-36 bg-gradient-to-br from-primary-500 to-indigo-600"></div>
 
-              <div className="relative z-10">
+              <div className="relative z-10 p-8">
                 <div className="relative inline-block mb-4">
-                  <div className="h-32 w-32 rounded-full bg-white p-1 shadow-lg mx-auto">
-                    <div className="h-full w-full rounded-full bg-primary-50 flex items-center justify-center text-5xl font-bold text-primary-600 overflow-hidden">
+                  <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-white p-1 shadow-lg mx-auto">
+                    <div className="h-full w-full rounded-full bg-primary-50 flex items-center justify-center text-4xl sm:text-5xl font-bold text-primary-600 overflow-hidden">
                       {profileData?.name?.charAt(0).toUpperCase()}
                     </div>
                   </div>
@@ -248,7 +260,7 @@ export default function ProfilePage() {
                   <label className="text-sm font-medium text-gray-700 ml-1">Preferred Side</label>
                   <select
                     value={seatPrefs.preferredSide}
-                    onChange={(e) => setSeatPrefs({ ...seatPrefs, preferredSide: e.target.value })}
+                    onChange={(e) => setSeatPrefs({ ...seatPrefs, preferredSide: e.target.value as '' | 'window' | 'aisle' | 'middle' })}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-gray-700"
                   >
                     <option value="">No Preference</option>
@@ -261,7 +273,7 @@ export default function ProfilePage() {
                   <label className="text-sm font-medium text-gray-700 ml-1">Preferred Row</label>
                   <select
                     value={seatPrefs.preferredRow}
-                    onChange={(e) => setSeatPrefs({ ...seatPrefs, preferredRow: e.target.value })}
+                    onChange={(e) => setSeatPrefs({ ...seatPrefs, preferredRow: e.target.value as '' | 'front' | 'middle' | 'back' })}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-gray-700"
                   >
                     <option value="">No Preference</option>
